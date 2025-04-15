@@ -1,16 +1,17 @@
-# services/gene_data.py
-
 import pandas as pd
 from typing import List, Optional
 from models.gene import Gene
 
-df = pd.read_csv("genes_human.csv", delimiter=';')
+df = pd.read_csv("data/genes_human.csv", delimiter=';')
 df = df.dropna(subset=['Ensembl', 'Chromosome', 'Seq region start', 'Seq region end'])
 
 for col in ['Biotype', 'Chromosome']:
     df[col] = df[col].astype(str).str.strip().str.replace(' ', '').str.title()
 
 df['GeneLength'] = df['Seq region end'] - df['Seq region start']
+
+def safe_str(val):
+    return str(val) if pd.notna(val) else None
 
 def get_filtered_genes(
     limit: int = 100,
@@ -30,9 +31,9 @@ def get_filtered_genes(
     return [
         Gene(
             ensembl=row['Ensembl'],
-            gene_symbol=row.get('Gene symbol'),
-            name=row.get('Name'),
-            biotype=row.get('Biotype'),
+            gene_symbol=safe_str(row['Gene symbol']),
+            name=safe_str(row['Name']),
+            biotype=safe_str(row['Biotype']),
             chromosome=row['Chromosome'],
             start=int(row['Seq region start']),
             end=int(row['Seq region end']),
@@ -48,9 +49,9 @@ def get_gene_by_id(ensembl_id: str) -> Optional[Gene]:
     row = row.iloc[0]
     return Gene(
         ensembl=row['Ensembl'],
-        gene_symbol=row.get('Gene symbol'),
-        name=row.get('Name'),
-        biotype=row.get('Biotype'),
+        gene_symbol=safe_str(row['Gene symbol']),
+        name=safe_str(row['Name']),
+        biotype=safe_str(row['Biotype']),
         chromosome=row['Chromosome'],
         start=int(row['Seq region start']),
         end=int(row['Seq region end']),
