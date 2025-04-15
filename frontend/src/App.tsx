@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import GeneTable, { Gene } from './components/GeneTable';
 import GeneFilters from './components/GeneFilters';
+import GeneStats from './components/GeneStats';
 
 function App() {
   const [genes, setGenes] = useState<Gene[]>([]);
@@ -58,6 +59,7 @@ function App() {
         <p>Welcome to the gene data visualization app.</p>
       </header>
       <main>
+        <GeneStats />
         <input
           type="text"
           placeholder="Search genes..."
