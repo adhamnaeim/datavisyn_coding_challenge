@@ -3,7 +3,18 @@ from typing import List, Optional
 from pydantic import BaseModel
 import pandas as pd
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
 app = FastAPI(title="Human Genes API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 df = pd.read_csv("genes_human.csv", delimiter=';')
 
