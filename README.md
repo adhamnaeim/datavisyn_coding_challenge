@@ -15,7 +15,13 @@ A simple fullstack web application to explore and visualize human gene data usin
 gene_app/
 ├── backend/
 │   ├── main.py
-│   └── genes_human.csv
+│   ├── models/
+│   ├── routes/
+│   ├── services/
+│   ├── tests/
+    ├── data/
+│       ├── genes_human.csv
+│   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
@@ -76,3 +82,27 @@ Frontend runs at: `http://localhost:3000`
 ## Features
 
 - Loads and displays human gene data from a CSV
+- RESTful API with filtering, sorting, and pagination
+- Search genes by name or symbol
+- Stats endpoint to summarize dataset features
+- Dynamic filtering options (biotype, chromosome, length range)
+- Unit tested with edge cases
+- CSV-based architecture for simplicity and demo-readiness
+
+---
+
+## API Highlights
+
+- `GET /genes`: Filter, paginate, and sort gene records
+- `GET /genes/{id}`: Retrieve individual gene by Ensembl ID
+- `GET /genes/stats`: Summary stats (total, lengths, biotype dist.)
+- `GET /genes/filters`: Fetch all valid filter options (UI-friendly)
+
+---
+
+## Testing
+
+```bash
+cd backend
+PYTHONPATH=. pytest tests/
+```
