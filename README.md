@@ -34,7 +34,7 @@ gene_app/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Backend (FastAPI)
 1. Create virtual environment:
