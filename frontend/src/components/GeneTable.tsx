@@ -13,21 +13,34 @@ export type Gene = {
 
 type Props = {
   genes: Gene[];
+  sort?: string;
+  order?: 'asc' | 'desc';
+  onSortChange: (field: string) => void;
 };
 
-const GeneTable: React.FC<Props> = ({ genes }) => {
+const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange }) => {
+  const renderHeader = (label: string, field: string) => {
+    const isSorted = sort === field;
+    const arrow = isSorted ? (order === 'asc' ? ' ▲' : ' ▼') : '';
+    return (
+      <th onClick={() => onSortChange(field)} style={{ cursor: 'pointer' }}>
+        {label}{arrow}
+      </th>
+    );
+  };
+
   return (
     <table>
       <thead>
         <tr>
-          <th>Ensembl</th>
-          <th>Symbol</th>
-          <th>Name</th>
-          <th>Biotype</th>
-          <th>Chromosome</th>
-          <th>Start</th>
-          <th>End</th>
-          <th>Gene Length</th>
+          {renderHeader("Ensembl", "ensembl")}
+          {renderHeader("Symbol", "gene_symbol")}
+          {renderHeader("Name", "name")}
+          {renderHeader("Biotype", "biotype")}
+          {renderHeader("Chromosome", "chromosome")}
+          {renderHeader("Start", "start")}
+          {renderHeader("End", "end")}
+          {renderHeader("Gene Length", "gene_length")}
         </tr>
       </thead>
       <tbody>
