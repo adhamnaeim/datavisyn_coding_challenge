@@ -61,7 +61,7 @@ function App() {
       </header>
       <main>
         <GeneStats />
-        <GeneCharts />
+        <GeneCharts genes={genes} filters={filters}/>
         <input
           type="text"
           placeholder="Search genes..."

@@ -1,48 +1,55 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import Plot from 'react-plotly.js';
+import { Gene } from './GeneTable';
 
-const GeneCharts: React.FC = () => {
-  const [biotypeData, setBiotypeData] = useState<{ labels: string[]; values: number[] } | null>(null);
-  const [chromosomeData, setChromosomeData] = useState<{ labels: string[]; values: number[] } | null>(null);
-  const [geneLengths, setGeneLengths] = useState<number[] | null>(null);
+type Filters = {
+  chromosome?: string;
+  biotype?: string;
+  minLength?: number;
+  maxLength?: number;
+};
 
-  useEffect(() => {
-    fetch('http://localhost:8000/genes/stats')
-      .then(res => res.json())
-      .then(data => {
-        const labels = Object.keys(data.top_biotypes);
-        const values = Object.values(data.top_biotypes) as number[];
-        setBiotypeData({ labels, values });
-      });
+type Props = {
+  genes: Gene[];
+  filters: Filters;
+};
 
-    fetch('http://localhost:8000/genes/filters')
-      .then(res => res.json())
-      .then(data => {
-        const chromosomes = data.chromosomes;
-        Promise.all(
-          chromosomes.map((chr: string) =>
-            fetch(`http://localhost:8000/genes?chromosome=${chr}&limit=1`).then(res => res.json())
-          )
-        ).then(responses => {
-          const labels = chromosomes;
-          const values = responses.map(r => r.total || 0);
-          setChromosomeData({ labels, values });
-        });
-      });
+const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
+  const biotypeData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    genes.forEach((g) => {
+      if (g.biotype) counts[g.biotype] = (counts[g.biotype] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    return {
+      labels: sorted.map(([k]) => k),
+      values: sorted.map(([_, v]) => v),
+    };
+  }, [genes]);
 
-    fetch('http://localhost:8000/genes?limit=1000')
-      .then(res => res.json())
-      .then(data => {
-        const lengths = data.results.map((gene: any) => gene.gene_length);
-        setGeneLengths(lengths);
-      });
-  }, []);
+  const chromosomeData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    genes.forEach((g) => {
+      counts[g.chromosome] = (counts[g.chromosome] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
+    return {
+      labels: sorted.map(([k]) => k),
+      values: sorted.map(([_, v]) => v),
+    };
+  }, [genes]);
+
+  const geneLengths = useMemo(() => genes.map(g => g.gene_length), [genes]);
+
+  if (genes.length < 10) return null;
 
   return (
     <div style={{ maxWidth: '800px', margin: '2rem auto' }}>
-      {biotypeData && (
+      <h2>Interactive Charts (Filtered)</h2>
+
+      {!filters.biotype && biotypeData.labels.length > 0 && (
         <>
-          <h2>Top 5 Gene Biotypes</h2>
+          <h3>Top 5 Gene Biotypes</h3>
           <Plot
             data={[{
               type: 'bar',
@@ -60,9 +67,9 @@ const GeneCharts: React.FC = () => {
         </>
       )}
 
-      {chromosomeData && (
+      {!filters.chromosome && chromosomeData.labels.length > 0 && (
         <>
-          <h2>Genes per Chromosome</h2>
+          <h3>Genes per Chromosome</h3>
           <Plot
             data={[{
               type: 'bar',
@@ -80,9 +87,9 @@ const GeneCharts: React.FC = () => {
         </>
       )}
 
-      {geneLengths && (
+      {geneLengths.length > 0 && (
         <>
-          <h2>Gene Length Distribution</h2>
+          <h3>Gene Length Distribution</h3>
           <Plot
             data={[{
               type: 'histogram',
@@ -90,7 +97,7 @@ const GeneCharts: React.FC = () => {
               marker: { color: 'salmon' },
             }]}
             layout={{
-              title: 'Distribution of Gene Lengths (Sampled)',
+              title: 'Distribution of Gene Lengths',
               xaxis: { title: 'Gene Length (bp)' },
               yaxis: { title: 'Frequency' },
               margin: { t: 40, l: 40, r: 30, b: 60 },
