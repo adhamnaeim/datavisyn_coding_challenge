@@ -16,9 +16,18 @@ type Props = {
   sort?: string;
   order?: 'asc' | 'desc';
   onSortChange: (field: string) => void;
+  search?: string;
 };
 
-const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange }) => {
+const highlight = (text: string, term?: string) => {
+  if (!term || !text.toLowerCase().includes(term.toLowerCase())) return text;
+  const regex = new RegExp(`(${term})`, 'ig');
+  return (
+    <span dangerouslySetInnerHTML={{ __html: text.replace(regex, '<mark>$1</mark>') }} />
+  );
+};
+
+const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search }) => {
   const renderHeader = (label: string, field: string) => {
     const isSorted = sort === field;
     const arrow = isSorted ? (order === 'asc' ? ' ▲' : ' ▼') : '';
@@ -46,9 +55,9 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange }) => {
       <tbody>
         {genes.map((gene) => (
           <tr key={gene.ensembl}>
-            <td>{gene.ensembl}</td>
-            <td>{gene.gene_symbol || '-'}</td>
-            <td>{gene.name || '-'}</td>
+            <td>{highlight(gene.ensembl, search)}</td>
+            <td>{gene.gene_symbol ? highlight(gene.gene_symbol, search) : '-'}</td>
+            <td>{gene.name ? highlight(gene.name, search) : '-'}</td>
             <td>{gene.biotype || '-'}</td>
             <td>{gene.chromosome}</td>
             <td>{gene.start}</td>

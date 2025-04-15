@@ -55,6 +55,7 @@ function App() {
             setSort(field);
             setOrder((prev) => (sort === field && order === 'asc' ? 'desc' : 'asc'));
           }}
+          search={search}
         />
       </main>
     </div>
