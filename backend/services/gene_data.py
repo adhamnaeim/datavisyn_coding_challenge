@@ -2,7 +2,8 @@ import pandas as pd
 from typing import List, Optional
 from models.gene import Gene
 
-df = pd.read_csv("data/genes_human.csv", delimiter=';')
+# Load and preprocess data
+df = pd.read_csv("genes_human.csv", delimiter=';')
 df = df.dropna(subset=['Ensembl', 'Chromosome', 'Seq region start', 'Seq region end'])
 
 for col in ['Biotype', 'Chromosome']:
@@ -17,7 +18,10 @@ def get_filtered_genes(
     limit: int = 100,
     offset: int = 0,
     chromosome: Optional[str] = None,
-    biotype: Optional[str] = None
+    biotype: Optional[str] = None,
+    min_length: Optional[int] = None,
+    max_length: Optional[int] = None,
+    search: Optional[str] = None
 ) -> List[Gene]:
     filtered_df = df.copy()
 
@@ -25,6 +29,15 @@ def get_filtered_genes(
         filtered_df = filtered_df[filtered_df['Chromosome'].str.upper() == chromosome.upper()]
     if biotype:
         filtered_df = filtered_df[filtered_df['Biotype'].str.lower() == biotype.lower()]
+    if min_length is not None:
+        filtered_df = filtered_df[filtered_df['GeneLength'] >= min_length]
+    if max_length is not None:
+        filtered_df = filtered_df[filtered_df['GeneLength'] <= max_length]
+    if search:
+        filtered_df = filtered_df[
+            filtered_df['Gene symbol'].astype(str).str.contains(search, case=False, na=False) |
+            filtered_df['Name'].astype(str).str.contains(search, case=False, na=False)
+        ]
 
     result = filtered_df.iloc[offset:offset+limit]
 
