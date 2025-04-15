@@ -8,6 +8,7 @@ export type Gene = {
   chromosome: string;
   start: number;
   end: number;
+  gene_length: number;
 };
 
 type Props = {
@@ -26,6 +27,7 @@ const GeneTable: React.FC<Props> = ({ genes }) => {
           <th>Chromosome</th>
           <th>Start</th>
           <th>End</th>
+          <th>Gene Length</th>
         </tr>
       </thead>
       <tbody>
@@ -38,6 +40,7 @@ const GeneTable: React.FC<Props> = ({ genes }) => {
             <td>{gene.chromosome}</td>
             <td>{gene.start}</td>
             <td>{gene.end}</td>
+            <td>{gene.gene_length}</td>
           </tr>
         ))}
       </tbody>
