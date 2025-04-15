@@ -101,3 +101,13 @@ def get_gene_stats() -> Dict[str, Any]:
             "mean": int(df['GeneLength'].mean())
         }
     }
+
+def get_filter_options() -> Dict[str, Any]:
+    return {
+        "chromosomes": sorted(df['Chromosome'].dropna().unique().tolist()),
+        "biotypes": sorted(df['Biotype'].dropna().unique().tolist()),
+        "gene_length_range": {
+            "min": int(df['GeneLength'].min()),
+            "max": int(df['GeneLength'].max())
+        }
+    }

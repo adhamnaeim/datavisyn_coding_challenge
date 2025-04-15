@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional, Dict, Any
 from models.gene import Gene
-from services.gene_data import get_filtered_genes, get_gene_by_id, get_gene_stats
+from services.gene_data import (
+    get_filtered_genes,
+    get_gene_by_id,
+    get_gene_stats,
+    get_filter_options,
+)
 
 router = APIRouter()
 
@@ -34,6 +39,10 @@ def read_genes(
         "offset": offset,
         "results": results
     }
+
+@router.get("/genes/filters")
+def read_filter_options():
+    return get_filter_options()
 
 @router.get("/genes/stats")
 def read_gene_stats():
