@@ -3,6 +3,7 @@ import './App.css';
 import GeneTable, { Gene } from './components/GeneTable';
 import GeneFilters from './components/GeneFilters';
 import GeneStats from './components/GeneStats';
+import GeneCharts from './components/GeneCharts';
 
 function App() {
   const [genes, setGenes] = useState<Gene[]>([]);
@@ -60,6 +61,7 @@ function App() {
       </header>
       <main>
         <GeneStats />
+        <GeneCharts />
         <input
           type="text"
           placeholder="Search genes..."
