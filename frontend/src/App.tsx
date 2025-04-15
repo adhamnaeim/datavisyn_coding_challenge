@@ -14,6 +14,7 @@ function App() {
 
   const [sort, setSort] = useState<string | undefined>(undefined);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
+  const [search, setSearch] = useState<string>('');
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -25,10 +26,12 @@ function App() {
     if (sort) params.append('sort', sort);
     if (order) params.append('order', order); 
 
+    if (search) params.append('search', search);
+
     fetch(`http://localhost:8000/genes?${params.toString()}`)
       .then(res => res.json())
       .then(data => setGenes(data.results));
-  }, [filters,sort, order]);
+  }, [filters,sort, order, search]);
 
   return (
     <div className="App">
@@ -37,6 +40,12 @@ function App() {
         <p>Welcome to the gene data visualization app.</p>
       </header>
       <main>
+        <input
+          type="text"
+          placeholder="Search genes..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <GeneFilters filters={filters} onChange={setFilters} />
         <GeneTable
           genes={genes}
