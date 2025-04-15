@@ -13,7 +13,9 @@ def read_genes(
     biotype: Optional[str] = Query(None),
     min_length: Optional[int] = Query(None),
     max_length: Optional[int] = Query(None),
-    search: Optional[str] = Query(None)
+    search: Optional[str] = Query(None),
+    sort: Optional[str] = Query(None),
+    order: Optional[str] = Query("asc")
 ):
     return get_filtered_genes(
         limit=limit,
@@ -22,7 +24,9 @@ def read_genes(
         biotype=biotype,
         min_length=min_length,
         max_length=max_length,
-        search=search
+        search=search,
+        sort=sort,
+        order=order
     )
 
 @router.get("/genes/{ensembl_id}", response_model=Gene)

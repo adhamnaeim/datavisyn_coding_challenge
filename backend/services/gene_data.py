@@ -3,7 +3,7 @@ from typing import List, Optional
 from models.gene import Gene
 
 # Load and preprocess data
-df = pd.read_csv("genes_human.csv", delimiter=';')
+df = pd.read_csv("data/genes_human.csv", delimiter=';')
 df = df.dropna(subset=['Ensembl', 'Chromosome', 'Seq region start', 'Seq region end'])
 
 for col in ['Biotype', 'Chromosome']:
@@ -21,7 +21,9 @@ def get_filtered_genes(
     biotype: Optional[str] = None,
     min_length: Optional[int] = None,
     max_length: Optional[int] = None,
-    search: Optional[str] = None
+    search: Optional[str] = None,
+    sort: Optional[str] = None,
+    order: Optional[str] = "asc"
 ) -> List[Gene]:
     filtered_df = df.copy()
 
@@ -38,6 +40,19 @@ def get_filtered_genes(
             filtered_df['Gene symbol'].astype(str).str.contains(search, case=False, na=False) |
             filtered_df['Name'].astype(str).str.contains(search, case=False, na=False)
         ]
+
+    if sort in ['ensembl', 'gene_symbol', 'name', 'biotype', 'chromosome', 'start', 'end', 'gene_length']:
+        sort_map = {
+            'ensembl': 'Ensembl',
+            'gene_symbol': 'Gene symbol',
+            'name': 'Name',
+            'biotype': 'Biotype',
+            'chromosome': 'Chromosome',
+            'start': 'Seq region start',
+            'end': 'Seq region end',
+            'gene_length': 'GeneLength',
+        }
+        filtered_df = filtered_df.sort_values(by=sort_map[sort], ascending=(order != "desc"))
 
     result = filtered_df.iloc[offset:offset+limit]
 
