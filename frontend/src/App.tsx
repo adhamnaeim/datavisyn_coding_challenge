@@ -42,6 +42,12 @@ function App() {
   const handlePrev = () => setOffset(prev => Math.max(0, prev - limit));
   const handleNext = () => setOffset(prev => prev + limit);
 
+  const clearFilters = () => {
+    setFilters({});
+    setSearch('');
+    setOffset(0);
+  };
+
   const from = offset + 1;
   const to = Math.min(offset + limit, total);
 
@@ -52,7 +58,6 @@ function App() {
         <p>Welcome to the gene data visualization app.</p>
       </header>
       <main>
-        <GeneFilters filters={filters} onChange={setFilters} />
         <input
           type="text"
           placeholder="Search genes..."
@@ -62,6 +67,8 @@ function App() {
             setSearch(e.target.value);
           }}
         />
+        <GeneFilters filters={filters} onChange={setFilters} />
+        <button onClick={clearFilters}>Clear Filters</button>
         <GeneTable
           genes={genes}
           sort={sort}
