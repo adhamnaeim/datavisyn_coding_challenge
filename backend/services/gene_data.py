@@ -38,7 +38,10 @@ def get_filtered_genes(
     if search:
         filtered_df = filtered_df[
             filtered_df['Gene symbol'].astype(str).str.contains(search, case=False, na=False) |
-            filtered_df['Name'].astype(str).str.contains(search, case=False, na=False)
+            filtered_df['Name'].astype(str).str.contains(search, case=False, na=False) |
+            filtered_df['Ensembl'].astype(str).str.contains(search, case=False, na=False) |
+            filtered_df['Biotype'].astype(str).str.contains(search, case=False, na=False)
+
         ]
 
     total = len(filtered_df)
