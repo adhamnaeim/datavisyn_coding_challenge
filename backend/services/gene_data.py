@@ -1,5 +1,5 @@
 import pandas as pd
-from typing import List, Optional
+from typing import List, Optional, Dict, Any, Tuple
 from models.gene import Gene
 
 # Load and preprocess data
@@ -24,7 +24,7 @@ def get_filtered_genes(
     search: Optional[str] = None,
     sort: Optional[str] = None,
     order: Optional[str] = "asc"
-) -> List[Gene]:
+) -> Tuple[int, List[Gene]]:
     filtered_df = df.copy()
 
     if chromosome:
@@ -41,6 +41,8 @@ def get_filtered_genes(
             filtered_df['Name'].astype(str).str.contains(search, case=False, na=False)
         ]
 
+    total = len(filtered_df)
+
     if sort in ['ensembl', 'gene_symbol', 'name', 'biotype', 'chromosome', 'start', 'end', 'gene_length']:
         sort_map = {
             'ensembl': 'Ensembl',
@@ -56,7 +58,7 @@ def get_filtered_genes(
 
     result = filtered_df.iloc[offset:offset+limit]
 
-    return [
+    genes = [
         Gene(
             ensembl=row['Ensembl'],
             gene_symbol=safe_str(row['Gene symbol']),
@@ -69,6 +71,8 @@ def get_filtered_genes(
         )
         for _, row in result.iterrows()
     ]
+
+    return total, genes
 
 def get_gene_by_id(ensembl_id: str) -> Optional[Gene]:
     row = df[df['Ensembl'] == ensembl_id]
@@ -85,3 +89,15 @@ def get_gene_by_id(ensembl_id: str) -> Optional[Gene]:
         end=int(row['Seq region end']),
         gene_length=int(row['GeneLength'])
     )
+
+def get_gene_stats() -> Dict[str, Any]:
+    return {
+        "total_genes": len(df),
+        "unique_chromosomes": df['Chromosome'].nunique(),
+        "top_biotypes": df['Biotype'].value_counts().head(5).to_dict(),
+        "gene_length": {
+            "min": int(df['GeneLength'].min()),
+            "max": int(df['GeneLength'].max()),
+            "mean": int(df['GeneLength'].mean())
+        }
+    }

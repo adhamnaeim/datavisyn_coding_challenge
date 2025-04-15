@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, Query
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from models.gene import Gene
-from services.gene_data import get_filtered_genes, get_gene_by_id
+from services.gene_data import get_filtered_genes, get_gene_by_id, get_gene_stats
 
 router = APIRouter()
 
-@router.get("/genes", response_model=List[Gene])
+@router.get("/genes", response_model=Dict[str, Any])
 def read_genes(
     limit: int = 100,
     offset: int = 0,
@@ -17,7 +17,7 @@ def read_genes(
     sort: Optional[str] = Query(None),
     order: Optional[str] = Query("asc")
 ):
-    return get_filtered_genes(
+    total, results = get_filtered_genes(
         limit=limit,
         offset=offset,
         chromosome=chromosome,
@@ -28,6 +28,16 @@ def read_genes(
         sort=sort,
         order=order
     )
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "results": results
+    }
+
+@router.get("/genes/stats")
+def read_gene_stats():
+    return get_gene_stats()
 
 @router.get("/genes/{ensembl_id}", response_model=Gene)
 def read_gene_by_id(ensembl_id: str):
