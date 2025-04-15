@@ -10,10 +10,20 @@ def read_genes(
     limit: int = 100,
     offset: int = 0,
     chromosome: Optional[str] = Query(None),
-    biotype: Optional[str] = Query(None)
+    biotype: Optional[str] = Query(None),
+    min_length: Optional[int] = Query(None),
+    max_length: Optional[int] = Query(None),
+    search: Optional[str] = Query(None)
 ):
-    return get_filtered_genes(limit=limit, offset=offset, chromosome=chromosome, biotype=biotype)
-
+    return get_filtered_genes(
+        limit=limit,
+        offset=offset,
+        chromosome=chromosome,
+        biotype=biotype,
+        min_length=min_length,
+        max_length=max_length,
+        search=search
+    )
 
 @router.get("/genes/{ensembl_id}", response_model=Gene)
 def read_gene_by_id(ensembl_id: str):
