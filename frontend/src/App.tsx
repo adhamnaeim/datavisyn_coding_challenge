@@ -15,6 +15,9 @@ function App() {
   const [sort, setSort] = useState<string | undefined>(undefined);
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [search, setSearch] = useState<string>('');
+  const [offset, setOffset] = useState<number>(0);
+  const [limit] = useState<number>(50); // page size
+  const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -22,16 +25,25 @@ function App() {
     if (filters.biotype) params.append('biotype', filters.biotype);
     if (filters.minLength) params.append('min_length', String(filters.minLength));
     if (filters.maxLength) params.append('max_length', String(filters.maxLength));
-
-    if (sort) params.append('sort', sort);
-    if (order) params.append('order', order); 
-
     if (search) params.append('search', search);
+    if (sort) params.append('sort', sort);
+    if (order) params.append('order', order);
+    params.append('offset', offset.toString());
+    params.append('limit', limit.toString());
 
     fetch(`http://localhost:8000/genes?${params.toString()}`)
       .then(res => res.json())
-      .then(data => setGenes(data.results));
-  }, [filters,sort, order, search]);
+      .then(data => {
+        setGenes(data.results);
+        setTotal(data.total);
+      });
+  }, [filters, sort, order, search, offset, limit]);
+
+  const handlePrev = () => setOffset(prev => Math.max(0, prev - limit));
+  const handleNext = () => setOffset(prev => prev + limit);
+
+  const from = offset + 1;
+  const to = Math.min(offset + limit, total);
 
   return (
     <div className="App">
@@ -40,23 +52,32 @@ function App() {
         <p>Welcome to the gene data visualization app.</p>
       </header>
       <main>
+        <GeneFilters filters={filters} onChange={setFilters} />
         <input
           type="text"
           placeholder="Search genes..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setOffset(0);
+            setSearch(e.target.value);
+          }}
         />
-        <GeneFilters filters={filters} onChange={setFilters} />
         <GeneTable
           genes={genes}
           sort={sort}
           order={order}
-          onSortChange={(field) => {
-            setSort(field);
-            setOrder((prev) => (sort === field && order === 'asc' ? 'desc' : 'asc'));
-          }}
           search={search}
+          onSortChange={(field) => {
+            setOffset(0);
+            setSort(field);
+            setOrder(prev => (sort === field && order === 'asc' ? 'desc' : 'asc'));
+          }}
         />
+        <div>
+          <p>Showing {from}–{to} of {total} results</p>
+          <button onClick={handlePrev} disabled={offset === 0}>Previous</button>
+          <button onClick={handleNext} disabled={offset + limit >= total}>Next</button>
+        </div>
       </main>
     </div>
   );
