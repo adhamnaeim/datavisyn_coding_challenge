@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Paper, Grid, Title, Text, List, ThemeIcon, Loader } from '@mantine/core';
 
 type GeneStatsData = {
   total_genes: number;
@@ -11,39 +12,53 @@ type GeneStatsData = {
   };
 };
 
-const GeneStats: React.FC = () => {
-  const [stats, setStats] = useState<GeneStatsData | null>(null);
+type Props = {
+    onBiotypeSelect?: (biotype: string) => void;
+  };
 
-  useEffect(() => {
-    fetch('http://localhost:8000/genes/stats')
-      .then(res => res.json())
-      .then(data => setStats(data));
-  }, []);
+const GeneStats: React.FC<Props> = ({ onBiotypeSelect }) => {
+    const [stats, setStats] = useState<GeneStatsData | null>(null);
+    
+    useEffect(() => {
+        fetch('http://localhost:8000/genes/stats')
+        .then(res => res.json())
+        .then(data => setStats(data));
+    }, []);
+    
 
-  if (!stats) return <p>Loading statistics...</p>;
+  if (!stats) return <Loader variant="dots" />;
 
   return (
-    <div className="gene-stats-grid">
-      <div>
-        <h2>Dataset Info</h2>
-        <p><strong>Total Genes:</strong> {stats.total_genes}</p>
-        <p><strong>Unique Chromosomes:</strong> {stats.unique_chromosomes}</p>
-        <p><strong>Gene Length (bp):</strong></p>
-        <ul>
-          <li>Min: {stats.gene_length.min}</li>
-          <li>Max: {stats.gene_length.max}</li>
-          <li>Mean: {stats.gene_length.mean}</li>
-        </ul>
-      </div>
-      <div>
-        <h2>Top Biotypes</h2>
-        <ul>
-          {Object.entries(stats.top_biotypes).map(([type, count]) => (
-            <li key={type}>{type}: {count}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <Paper withBorder radius="md" p="md" mt="md">
+      <Grid gutter="md">
+        <Grid.Col span={6}>
+          <Title order={4} mb="xs">Dataset Info</Title>
+          <Text><strong>Total Genes:</strong> {stats.total_genes}</Text>
+          <Text><strong>Unique Chromosomes:</strong> {stats.unique_chromosomes}</Text>
+          <Text mt="sm"><strong>Gene Length (bp):</strong></Text>
+          <List spacing="xs" size="sm">
+            <List.Item>Min: {stats.gene_length.min}</List.Item>
+            <List.Item>Max: {stats.gene_length.max}</List.Item>
+            <List.Item>Mean: {stats.gene_length.mean}</List.Item>
+          </List>
+        </Grid.Col>
+
+        <Grid.Col span={6}>
+          <Title order={4} mb="xs">Top Biotypes</Title>
+          <List spacing="xs" size="sm">
+            {Object.entries(stats.top_biotypes).map(([type, count]) => (
+                <List.Item
+                    key={type}
+                    onClick={() => onBiotypeSelect?.(type)}
+                    style={{ cursor: 'pointer', color: 'blue' }}
+                    >
+                    {type}: {count}
+                </List.Item>
+            ))}
+          </List>
+        </Grid.Col>
+      </Grid>
+    </Paper>
   );
 };
 

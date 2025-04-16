@@ -73,7 +73,11 @@ function App() {
         </Text>
 
         <Stack>
-          <GeneStats />
+        <GeneStats onBiotypeSelect={(biotype) => {
+          setFilters((prev) => ({ ...prev, biotype }));
+          setOffset(0);
+          }} 
+        />
           <GeneCharts genes={genes} filters={filters} />
 
           <TextInput

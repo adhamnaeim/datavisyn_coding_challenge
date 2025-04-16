@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Gene } from './GeneTable';
+import { Paper, Title, Text, Button, Group, Stack } from '@mantine/core';
 
 type Filters = {
   chromosome?: string;
@@ -15,6 +16,8 @@ type Props = {
 };
 
 const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
+  const [activeChart, setActiveChart] = useState(0);
+
   const biotypeData = useMemo(() => {
     const counts: Record<string, number> = {};
     genes.forEach((g) => {
@@ -43,69 +46,80 @@ const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
 
   if (genes.length < 10) return null;
 
+  const charts = [
+    !filters.biotype && biotypeData.labels.length > 0 && (
+      <Stack spacing="xs">
+        <Title order={4}>Top 5 Gene Biotypes</Title>
+        <Plot
+          data={[{
+            type: 'bar',
+            x: biotypeData.labels,
+            y: biotypeData.values,
+            marker: { color: 'steelblue' },
+          }]}
+          layout={{
+            title: 'Top Biotypes by Count',
+            xaxis: { title: 'Biotype' },
+            yaxis: { title: 'Count' },
+            margin: { t: 40, l: 40, r: 30, b: 60 },
+          }}
+        />
+      </Stack>
+    ),
+    !filters.chromosome && chromosomeData.labels.length > 0 && (
+      <Stack spacing="xs">
+        <Title order={4}>Genes per Chromosome</Title>
+        <Plot
+          data={[{
+            type: 'bar',
+            x: chromosomeData.labels,
+            y: chromosomeData.values,
+            marker: { color: 'darkgreen' },
+          }]}
+          layout={{
+            title: 'Gene Count by Chromosome',
+            xaxis: { title: 'Chromosome' },
+            yaxis: { title: 'Count' },
+            margin: { t: 40, l: 40, r: 30, b: 60 },
+          }}
+        />
+      </Stack>
+    ),
+    geneLengths.length > 0 && (
+      <Stack spacing="xs">
+        <Title order={4}>Gene Length Distribution</Title>
+        <Plot
+          data={[{
+            type: 'histogram',
+            x: geneLengths,
+            marker: { color: 'salmon' },
+          }]}
+          layout={{
+            title: 'Distribution of Gene Lengths',
+            xaxis: { title: 'Gene Length (bp)' },
+            yaxis: { title: 'Frequency' },
+            margin: { t: 40, l: 40, r: 30, b: 60 },
+          }}
+        />
+      </Stack>
+    ),
+  ].filter(Boolean);
+
   return (
-    <div style={{ maxWidth: '800px', margin: '2rem auto' }}>
-      <h2>Interactive Charts (Filtered)</h2>
-
-      {!filters.biotype && biotypeData.labels.length > 0 && (
-        <>
-          <h3>Top 5 Gene Biotypes</h3>
-          <Plot
-            data={[{
-              type: 'bar',
-              x: biotypeData.labels,
-              y: biotypeData.values,
-              marker: { color: 'steelblue' },
-            }]}
-            layout={{
-              title: 'Top Biotypes by Count',
-              xaxis: { title: 'Biotype' },
-              yaxis: { title: 'Count' },
-              margin: { t: 40, l: 40, r: 30, b: 60 },
-            }}
-          />
-        </>
-      )}
-
-      {!filters.chromosome && chromosomeData.labels.length > 0 && (
-        <>
-          <h3>Genes per Chromosome</h3>
-          <Plot
-            data={[{
-              type: 'bar',
-              x: chromosomeData.labels,
-              y: chromosomeData.values,
-              marker: { color: 'darkgreen' },
-            }]}
-            layout={{
-              title: 'Gene Count by Chromosome',
-              xaxis: { title: 'Chromosome' },
-              yaxis: { title: 'Count' },
-              margin: { t: 40, l: 40, r: 30, b: 60 },
-            }}
-          />
-        </>
-      )}
-
-      {geneLengths.length > 0 && (
-        <>
-          <h3>Gene Length Distribution</h3>
-          <Plot
-            data={[{
-              type: 'histogram',
-              x: geneLengths,
-              marker: { color: 'salmon' },
-            }]}
-            layout={{
-              title: 'Distribution of Gene Lengths',
-              xaxis: { title: 'Gene Length (bp)' },
-              yaxis: { title: 'Frequency' },
-              margin: { t: 40, l: 40, r: 30, b: 60 },
-            }}
-          />
-        </>
-      )}
-    </div>
+    <Paper withBorder radius="md" p="md" mt="md">
+      <Group position="apart" mb="sm">
+        <Title order={3}>Interactive Charts</Title>
+        <Group spacing="xs">
+          <Button size="xs" onClick={() => setActiveChart((activeChart - 1 + charts.length) % charts.length)}>
+            ← Prev
+          </Button>
+          <Button size="xs" onClick={() => setActiveChart((activeChart + 1) % charts.length)}>
+            Next →
+          </Button>
+        </Group>
+      </Group>
+      {charts[activeChart]}
+    </Paper>
   );
 };
 
