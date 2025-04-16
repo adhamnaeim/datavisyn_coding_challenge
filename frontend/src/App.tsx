@@ -13,6 +13,7 @@ import {
   Button,
   Group,
   Stack,
+  Select,
 } from '@mantine/core';
 
 function App() {
@@ -31,7 +32,7 @@ function App() {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [search, setSearch] = useState<string>('');
   const [offset, setOffset] = useState<number>(0);
-  const [limit] = useState<number>(50);
+  const [limit, setLimit] = useState<number>(50);
   const [total, setTotal] = useState<number>(0);
 
   const buildParams = (includePagination = true) => {
@@ -51,7 +52,6 @@ function App() {
   };
 
   useEffect(() => {
-    // Table data (paginated)
     fetch(`http://localhost:8000/genes?${buildParams(true).toString()}`)
       .then(res => res.json())
       .then(data => {
@@ -116,6 +116,24 @@ function App() {
             Clear Filters
           </Button>
 
+          <Group position="apart" mt="sm">
+            <Text size="sm">Showing {from}–{to} of {total} results</Text>
+            <Group spacing="xs">
+              <Select
+                size="xs"
+                value={String(limit)}
+                onChange={(value) => {
+                  setLimit(Number(value));
+                  setOffset(0);
+                }}
+                data={['50', '100', '500', '1000']}
+                style={{ width: 100 }}
+              />
+              <Button onClick={handlePrev} disabled={offset === 0} size="xs">Previous</Button>
+              <Button onClick={handleNext} disabled={offset + limit >= total} size="xs">Next</Button>
+            </Group>
+          </Group>
+
           <GeneTable
             genes={genes}
             sort={sort}
@@ -127,14 +145,6 @@ function App() {
               setOrder(prev => (sort === field && order === 'asc' ? 'desc' : 'asc'));
             }}
           />
-
-          <Group position="apart" mt="sm">
-            <Text size="sm">Showing {from}–{to} of {total} results</Text>
-            <Group spacing="xs">
-              <Button onClick={handlePrev} disabled={offset === 0} size="xs">Previous</Button>
-              <Button onClick={handleNext} disabled={offset + limit >= total} size="xs">Next</Button>
-            </Group>
-          </Group>
         </Stack>
       </Container>
     </AppShell>
