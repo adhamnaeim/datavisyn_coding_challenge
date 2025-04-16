@@ -13,11 +13,13 @@ import {
   Button,
   Group,
   Stack,
-  Space,
 } from '@mantine/core';
 
 function App() {
   const [genes, setGenes] = useState<Gene[]>([]);
+  const [allGenes, setAllGenes] = useState<Gene[]>([]);
+  const [useFullDataForCharts, setUseFullDataForCharts] = useState(false);
+
   const [filters, setFilters] = useState<{
     chromosome?: string;
     biotype?: string;
@@ -32,7 +34,7 @@ function App() {
   const [limit] = useState<number>(50);
   const [total, setTotal] = useState<number>(0);
 
-  useEffect(() => {
+  const buildParams = (includePagination = true) => {
     const params = new URLSearchParams();
     if (filters.chromosome) params.append('chromosome', filters.chromosome);
     if (filters.biotype) params.append('biotype', filters.biotype);
@@ -41,16 +43,30 @@ function App() {
     if (search) params.append('search', search);
     if (sort) params.append('sort', sort);
     if (order) params.append('order', order);
-    params.append('offset', offset.toString());
-    params.append('limit', limit.toString());
+    if (includePagination) {
+      params.append('offset', offset.toString());
+      params.append('limit', limit.toString());
+    }
+    return params;
+  };
 
-    fetch(`http://localhost:8000/genes?${params.toString()}`)
+  useEffect(() => {
+    // Table data (paginated)
+    fetch(`http://localhost:8000/genes?${buildParams(true).toString()}`)
       .then(res => res.json())
       .then(data => {
         setGenes(data.results);
         setTotal(data.total);
       });
   }, [filters, sort, order, search, offset, limit]);
+
+  useEffect(() => {
+    if (useFullDataForCharts) {
+      fetch(`http://localhost:8000/genes?${buildParams(false).toString()}`)
+        .then(res => res.json())
+        .then(data => setAllGenes(data.results));
+    }
+  }, [filters, sort, order, search, useFullDataForCharts]);
 
   const handlePrev = () => setOffset(prev => Math.max(0, prev - limit));
   const handleNext = () => setOffset(prev => prev + limit);
@@ -73,12 +89,17 @@ function App() {
         </Text>
 
         <Stack>
-        <GeneStats onBiotypeSelect={(biotype) => {
-          setFilters((prev) => ({ ...prev, biotype }));
-          setOffset(0);
-          }} 
-        />
-          <GeneCharts genes={genes} filters={filters} />
+          <GeneStats onBiotypeSelect={(biotype) => {
+            setFilters((prev) => ({ ...prev, biotype }));
+            setOffset(0);
+          }} />
+
+          <GeneCharts
+            genes={useFullDataForCharts ? allGenes : genes}
+            filters={filters}
+            useFullDataForCharts={useFullDataForCharts}
+            onToggleDataScope={setUseFullDataForCharts}
+          />
 
           <TextInput
             placeholder="Search genes..."

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Gene } from './GeneTable';
-import { Paper, Title, Text, Button, Group, Stack } from '@mantine/core';
+import { Paper, Title, Button, Group, Stack, Switch } from '@mantine/core';
 
 type Filters = {
   chromosome?: string;
@@ -13,9 +13,11 @@ type Filters = {
 type Props = {
   genes: Gene[];
   filters: Filters;
+  onToggleDataScope?: (useFull: boolean) => void;
+  useFullDataForCharts?: boolean;
 };
 
-const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
+const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFullDataForCharts }) => {
   const [activeChart, setActiveChart] = useState(0);
 
   const biotypeData = useMemo(() => {
@@ -48,7 +50,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
 
   const charts = [
     !filters.biotype && biotypeData.labels.length > 0 && (
-      <Stack spacing="xs">
+      <Stack spacing="xs" key="biotype">
         <Title order={4}>Top 5 Gene Biotypes</Title>
         <Plot
           data={[{
@@ -67,7 +69,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
       </Stack>
     ),
     !filters.chromosome && chromosomeData.labels.length > 0 && (
-      <Stack spacing="xs">
+      <Stack spacing="xs" key="chromosome">
         <Title order={4}>Genes per Chromosome</Title>
         <Plot
           data={[{
@@ -86,7 +88,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
       </Stack>
     ),
     geneLengths.length > 0 && (
-      <Stack spacing="xs">
+      <Stack spacing="xs" key="length">
         <Title order={4}>Gene Length Distribution</Title>
         <Plot
           data={[{
@@ -110,6 +112,12 @@ const GeneCharts: React.FC<Props> = ({ genes, filters }) => {
       <Group position="apart" mb="sm">
         <Title order={3}>Interactive Charts</Title>
         <Group spacing="xs">
+          <Switch
+            size="xs"
+            label="Use full dataset"
+            checked={useFullDataForCharts}
+            onChange={(event) => onToggleDataScope?.(event.currentTarget.checked)}
+          />
           <Button size="xs" onClick={() => setActiveChart((activeChart - 1 + charts.length) % charts.length)}>
             ← Prev
           </Button>
