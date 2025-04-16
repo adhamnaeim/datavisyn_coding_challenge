@@ -4,6 +4,17 @@ import GeneTable, { Gene } from './components/GeneTable';
 import GeneFilters from './components/GeneFilters';
 import GeneStats from './components/GeneStats';
 import GeneCharts from './components/GeneCharts';
+import {
+  AppShell,
+  Container,
+  Title,
+  Text,
+  TextInput,
+  Button,
+  Group,
+  Stack,
+  Space,
+} from '@mantine/core';
 
 function App() {
   const [genes, setGenes] = useState<Gene[]>([]);
@@ -18,7 +29,7 @@ function App() {
   const [order, setOrder] = useState<'asc' | 'desc'>('asc');
   const [search, setSearch] = useState<string>('');
   const [offset, setOffset] = useState<number>(0);
-  const [limit] = useState<number>(50); // page size
+  const [limit] = useState<number>(50);
   const [total, setTotal] = useState<number>(0);
 
   useEffect(() => {
@@ -54,43 +65,54 @@ function App() {
   const to = Math.min(offset + limit, total);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <h1>Human Genes Viewer</h1>
-        <p>Welcome to the gene data visualization app.</p>
-      </header>
-      <main>
-        <GeneStats />
-        <GeneCharts genes={genes} filters={filters}/>
-        <input
-          type="text"
-          placeholder="Search genes..."
-          value={search}
-          onChange={(e) => {
-            setOffset(0);
-            setSearch(e.target.value);
-          }}
-        />
-        <GeneFilters filters={filters} onChange={setFilters} />
-        <button onClick={clearFilters}>Clear Filters</button>
-        <GeneTable
-          genes={genes}
-          sort={sort}
-          order={order}
-          search={search}
-          onSortChange={(field) => {
-            setOffset(0);
-            setSort(field);
-            setOrder(prev => (sort === field && order === 'asc' ? 'desc' : 'asc'));
-          }}
-        />
-        <div>
-          <p>Showing {from}–{to} of {total} results</p>
-          <button onClick={handlePrev} disabled={offset === 0}>Previous</button>
-          <button onClick={handleNext} disabled={offset + limit >= total}>Next</button>
-        </div>
-      </main>
-    </div>
+    <AppShell padding="md">
+      <Container>
+        <Title order={1} ta="center">Human Genes Viewer</Title>
+        <Text ta="center" mb="lg">
+          Welcome to the gene data visualization app.
+        </Text>
+
+        <Stack>
+          <GeneStats />
+          <GeneCharts genes={genes} filters={filters} />
+
+          <TextInput
+            placeholder="Search genes..."
+            value={search}
+            onChange={(e) => {
+              setOffset(0);
+              setSearch(e.currentTarget.value);
+            }}
+          />
+
+          <GeneFilters filters={filters} onChange={setFilters} />
+
+          <Button onClick={clearFilters} variant="light" color="gray">
+            Clear Filters
+          </Button>
+
+          <GeneTable
+            genes={genes}
+            sort={sort}
+            order={order}
+            search={search}
+            onSortChange={(field) => {
+              setOffset(0);
+              setSort(field);
+              setOrder(prev => (sort === field && order === 'asc' ? 'desc' : 'asc'));
+            }}
+          />
+
+          <Group position="apart" mt="sm">
+            <Text size="sm">Showing {from}–{to} of {total} results</Text>
+            <Group spacing="xs">
+              <Button onClick={handlePrev} disabled={offset === 0} size="xs">Previous</Button>
+              <Button onClick={handleNext} disabled={offset + limit >= total} size="xs">Next</Button>
+            </Group>
+          </Group>
+        </Stack>
+      </Container>
+    </AppShell>
   );
 }
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Select, NumberInput, Stack } from '@mantine/core';
 
 type FilterOptions = {
   chromosomes: string[];
@@ -31,51 +32,47 @@ const GeneFilters: React.FC<Props> = ({ filters, onChange }) => {
   if (!options) return <p>Loading filters...</p>;
 
   return (
-    <div>
-      <label>
-        Chromosome:
-        <select
-          value={filters.chromosome || ""}
-          onChange={e => onChange({ ...filters, chromosome: e.target.value || undefined })}
-        >
-          <option value="">All</option>
-          {options.chromosomes.map(ch => (
-            <option key={ch} value={ch}>{ch}</option>
-          ))}
-        </select>
-      </label>
+    <Stack spacing="sm">
+      <Select
+        label="Chromosome"
+        placeholder="All"
+        size="xs"
+        data={options.chromosomes.map(ch => ({ value: ch, label: ch }))}
+        value={filters.chromosome || null}
+        onChange={(value) => onChange({ ...filters, chromosome: value || undefined })}
+        clearable
+      />
 
-      <label>
-        Biotype:
-        <select
-          value={filters.biotype || ""}
-          onChange={e => onChange({ ...filters, biotype: e.target.value || undefined })}
-        >
-          <option value="">All</option>
-          {options.biotypes.map(bt => (
-            <option key={bt} value={bt}>{bt}</option>
-          ))}
-        </select>
-      </label>
+      <Select
+        label="Biotype"
+        placeholder="All"
+        size="sm"
+        clearable
+        value={filters.biotype || null}
+        data={options.biotypes.map(bt => ({ value: bt, label: bt }))}
+        onChange={(value) => onChange({ ...filters, biotype: value || undefined })}
+        rightSectionWidth={24}
+      styles={{}}
+      />
 
-      <label>
-        Min Length:
-        <input
-          type="number"
-          value={filters.minLength ?? options.gene_length_range.min}
-          onChange={e => onChange({ ...filters, minLength: Number(e.target.value) })}
-        />
-      </label>
+      <NumberInput
+        label="Min Length"
+        size="sm"
+        min={options.gene_length_range.min}
+        max={options.gene_length_range.max}
+        value={filters.minLength ?? options.gene_length_range.min}
+        onChange={(value) => onChange({ ...filters, minLength: value as number })}
+      />
 
-      <label>
-        Max Length:
-        <input
-          type="number"
-          value={filters.maxLength ?? options.gene_length_range.max}
-          onChange={e => onChange({ ...filters, maxLength: Number(e.target.value) })}
-        />
-      </label>
-    </div>
+      <NumberInput
+        label="Max Length"
+        size="sm"
+        min={options.gene_length_range.min}
+        max={options.gene_length_range.max}
+        value={filters.maxLength ?? options.gene_length_range.max}
+        onChange={(value) => onChange({ ...filters, maxLength: value as number })}
+      />
+    </Stack>
   );
 };
 
