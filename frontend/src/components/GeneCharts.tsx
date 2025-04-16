@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Gene } from './GeneTable';
-import { Paper, Title, Button, Group, Stack, Switch } from '@mantine/core';
+import { Paper, Title, Button, Group, Stack, Switch, Select } from '@mantine/core';
 
 type Filters = {
   chromosome?: string;
@@ -19,18 +19,23 @@ type Props = {
 
 const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFullDataForCharts }) => {
   const [activeChart, setActiveChart] = useState(0);
+  const [topNBiotypes, setTopNBiotypes] = useState<string>('5');
 
   const biotypeData = useMemo(() => {
     const counts: Record<string, number> = {};
     genes.forEach((g) => {
       if (g.biotype) counts[g.biotype] = (counts[g.biotype] || 0) + 1;
     });
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const top = topNBiotypes === 'all'
+    ? sorted
+    : sorted.slice(0, Number(topNBiotypes));
+
     return {
-      labels: sorted.map(([k]) => k),
-      values: sorted.map(([_, v]) => v),
+      labels: top.map(([k]) => k),
+      values: top.map(([_, v]) => v),
     };
-  }, [genes]);
+  }, [genes, topNBiotypes]);
 
   const chromosomeData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -51,7 +56,22 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
   const charts = [
     !filters.biotype && biotypeData.labels.length > 0 && (
       <Stack spacing="xs" key="biotype">
-        <Title order={4}>Top 5 Gene Biotypes</Title>
+        <Group position="apart">
+          <Title order={4}>Top Gene Biotypes</Title>
+          <Select
+            size="xs"
+            style={{ width: 100 }}
+            value={String(topNBiotypes)}
+            onChange={(value) => setTopNBiotypes(value!)}
+            data={[
+                { value: '5', label: 'Top 5' },
+                { value: '10', label: 'Top 10' },
+                { value: '20', label: 'Top 20' },
+                { value: 'all', label: 'All' },
+              ]}
+            allowDeselect={false}
+          />
+        </Group>
         <Plot
           data={[{
             type: 'bar',
@@ -60,7 +80,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
             marker: { color: 'steelblue' },
           }]}
           layout={{
-            title: 'Top Biotypes by Count',
+            title: `Top ${topNBiotypes} Biotypes by Count`,
             xaxis: { title: 'Biotype' },
             yaxis: { title: 'Count' },
             margin: { t: 40, l: 40, r: 30, b: 60 },
