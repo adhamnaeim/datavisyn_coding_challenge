@@ -54,7 +54,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
   if (genes.length < 10) return null;
 
   const charts = [
-    !filters.biotype && biotypeData.labels.length > 0 && (
+    biotypeData.labels.length > 1 && (
       <Stack spacing="xs" key="biotype">
         <Group position="apart">
           <Title order={4}>Top Gene Biotypes</Title>

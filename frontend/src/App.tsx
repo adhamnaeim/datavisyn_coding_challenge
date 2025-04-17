@@ -14,12 +14,14 @@ import {
   Group,
   Stack,
   Select,
+  Collapse,
 } from '@mantine/core';
 
 function App() {
   const [genes, setGenes] = useState<Gene[]>([]);
   const [allGenes, setAllGenes] = useState<Gene[]>([]);
   const [useFullDataForCharts, setUseFullDataForCharts] = useState(false);
+  const [showTable, setShowTable] = useState(true);
 
   const [filters, setFilters] = useState<{
     chromosome?: string;
@@ -112,7 +114,7 @@ function App() {
 
           <GeneFilters filters={filters} onChange={setFilters} />
 
-          <Button onClick={clearFilters} variant="light" color="gray">
+          <Button onClick={clearFilters} variant="light" color="red">
             Clear Filters
           </Button>
 
@@ -134,17 +136,24 @@ function App() {
             </Group>
           </Group>
 
-          <GeneTable
-            genes={genes}
-            sort={sort}
-            order={order}
-            search={search}
-            onSortChange={(field) => {
-              setOffset(0);
-              setSort(field);
-              setOrder(prev => (sort === field && order === 'asc' ? 'desc' : 'asc'));
-            }}
-          />
+          <Button size="xs" variant="subtle" onClick={() => setShowTable((prev) => !prev)}>
+            {showTable ? 'Hide Table' : 'Show Table'}
+          </Button>
+
+          <Collapse in={showTable}>
+            <GeneTable
+              genes={genes}
+              sort={sort}
+              order={order}
+              search={search}
+              onSortChange={(field) => {
+                setOffset(0);
+                setSort(field);
+                setOrder(prev => (sort === field && order === 'asc' ? 'desc' : 'asc'));
+              }}
+            />
+
+          </Collapse>
         </Stack>
       </Container>
     </AppShell>
