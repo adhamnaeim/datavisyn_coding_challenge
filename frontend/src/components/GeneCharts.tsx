@@ -32,6 +32,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
   const [featureType, setFeatureType] = useState<'biotype' | 'chromosome'>('biotype');
   const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
   const [topN, setTopN] = useState<string>('10');
+  const [lengthChartType, setLengthChartType] = useState<'histogram' | 'box'>('histogram');
 
   const theme = useMantineTheme();
   const dynamicColors = theme.colors.blue.slice(0, 30).reverse();
@@ -121,20 +122,51 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
     ),
     histogramData.length > 0 && (
       <Stack spacing="xs" key="geneLength">
-        <Title order={4}>Gene Length Distribution</Title>
-        <Plot
-          data={[{
-            type: 'histogram',
-            x: histogramData,
-            marker: { color: 'salmon' },
-          }]}
-          layout={{
-            title: 'Distribution of Gene Lengths',
-            xaxis: { title: 'Gene Length (bp)' },
-            yaxis: { title: 'Frequency' },
-            margin: { t: 40, l: 40, r: 30, b: 60 },
-          }}
-        />
+        <Group position="apart">
+          <Title order={4}>Gene Length Distribution</Title>
+          <SegmentedControl
+            size="xs"
+            value={lengthChartType}
+            onChange={(value: 'histogram' | 'box') => setLengthChartType(value)}
+            data={[
+              { label: 'Histogram', value: 'histogram' },
+              { label: 'Box Plot', value: 'box' },
+            ]}
+          />
+        </Group>
+        {lengthChartType === 'histogram' ? (
+          <Plot
+            data={[{
+              type: 'histogram',
+              x: histogramData,
+              marker: {
+                color: histogramData.map((_, i) => dynamicColors[i % dynamicColors.length]),
+              },
+            }]}
+            layout={{
+              title: 'Distribution of Gene Lengths',
+              xaxis: { title: 'Gene Length (bp)' },
+              yaxis: { title: 'Frequency' },
+              margin: { t: 40, l: 40, r: 30, b: 60 },
+            }}
+          />
+        ) : (
+          <Plot
+            data={[{
+              type: 'box',
+              y: histogramData,
+              boxpoints: 'all',
+              jitter: 0.3,
+              pointpos: 0,
+              marker: { color: dynamicColors[0] },
+            }]}
+            layout={{
+              title: 'Gene Length Box Plot',
+              yaxis: { title: 'Gene Length (bp)' },
+              margin: { t: 40, l: 40, r: 30, b: 60 },
+            }}
+          />
+        )}
       </Stack>
     ),
   ].filter(Boolean);
