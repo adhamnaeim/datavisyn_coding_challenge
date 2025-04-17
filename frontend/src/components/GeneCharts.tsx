@@ -1,7 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
 import { Gene } from './GeneTable';
-import { Paper, Title, Button, Group, Stack, Switch, Select } from '@mantine/core';
+import {
+  Paper,
+  Title,
+  Button,
+  Group,
+  Stack,
+  Switch,
+  Select,
+  SegmentedControl,
+  useMantineTheme,
+} from '@mantine/core';
 
 type Filters = {
   chromosome?: string;
@@ -20,6 +30,10 @@ type Props = {
 const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFullDataForCharts }) => {
   const [activeChart, setActiveChart] = useState(0);
   const [topNBiotypes, setTopNBiotypes] = useState<string>('5');
+  const [biotypeChartType, setBiotypeChartType] = useState<'bar' | 'pie'>('bar');
+
+  const theme = useMantineTheme();
+  const dynamicColors = theme.colors.blue.slice(0, 30).reverse();
 
   const biotypeData = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -27,10 +41,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
       if (g.biotype) counts[g.biotype] = (counts[g.biotype] || 0) + 1;
     });
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const top = topNBiotypes === 'all'
-    ? sorted
-    : sorted.slice(0, Number(topNBiotypes));
-
+    const top = topNBiotypes === 'all' ? sorted : sorted.slice(0, Number(topNBiotypes));
     return {
       labels: top.map(([k]) => k),
       values: top.map(([_, v]) => v),
@@ -49,7 +60,10 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
     };
   }, [genes]);
 
-  const geneLengths = useMemo(() => genes.map(g => g.gene_length), [genes]);
+  const geneLengths = useMemo(() =>
+    genes.map(g => g.gene_length).filter(len => typeof len === 'number' && isFinite(len) && len > 0),
+    [genes]
+  );
 
   if (genes.length < 10) return null;
 
@@ -58,31 +72,48 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
       <Stack spacing="xs" key="biotype">
         <Group position="apart">
           <Title order={4}>Top Gene Biotypes</Title>
-          <Select
-            size="xs"
-            style={{ width: 100 }}
-            value={String(topNBiotypes)}
-            onChange={(value) => setTopNBiotypes(value!)}
-            data={[
+          <Group spacing="xs">
+            <SegmentedControl
+              size="xs"
+              data={[
+                { label: 'Bar', value: 'bar' },
+                { label: 'Pie', value: 'pie' },
+              ]}
+              value={biotypeChartType}
+              onChange={(value: 'bar' | 'pie') => setBiotypeChartType(value)}
+            />
+            <Select
+              size="xs"
+              style={{ width: 100 }}
+              value={topNBiotypes}
+              onChange={(value) => setTopNBiotypes(value!)}
+              data={[
                 { value: '5', label: 'Top 5' },
                 { value: '10', label: 'Top 10' },
-                { value: '20', label: 'Top 20' },
                 { value: 'all', label: 'All' },
               ]}
-            allowDeselect={false}
-          />
+            />
+          </Group>
         </Group>
         <Plot
-          data={[{
-            type: 'bar',
-            x: biotypeData.labels,
-            y: biotypeData.values,
-            marker: { color: 'steelblue' },
-          }]}
+          data={[
+            biotypeChartType === 'bar'
+              ? {
+                  type: 'bar',
+                  x: biotypeData.labels,
+                  y: biotypeData.values,
+                  marker: { color: biotypeData.labels.map((_, i) => dynamicColors[i % dynamicColors.length]) },
+                }
+              : {
+                  type: 'pie',
+                  labels: biotypeData.labels,
+                  values: biotypeData.values,
+                  marker: { colors: dynamicColors },
+                },
+          ]}
           layout={{
             title: `Top ${topNBiotypes} Biotypes by Count`,
-            xaxis: { title: 'Biotype' },
-            yaxis: { title: 'Count' },
+            showlegend: biotypeChartType === 'pie',
             margin: { t: 40, l: 40, r: 30, b: 60 },
           }}
         />
