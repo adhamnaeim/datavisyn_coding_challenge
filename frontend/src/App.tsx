@@ -79,6 +79,10 @@ function App() {
     setOffset(0);
   };
 
+  const clearSorting = () => {
+    setSort(undefined);
+  };
+
   const from = offset + 1;
   const to = Math.min(offset + limit, total);
 
@@ -119,6 +123,9 @@ function App() {
           </Button>
 
           <Group position="apart" mt="sm">
+          <Button onClick={clearSorting} variant="light" color="red">
+            Clear Sorting
+          </Button>
             <Text size="sm">Showing {from}–{to} of {total} results</Text>
             <Group spacing="xs">
               <Select
