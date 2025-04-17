@@ -87,8 +87,8 @@ function App() {
   const to = Math.min(offset + limit, total);
 
   return (
-    <AppShell padding="md">
-      <Container>
+    <AppShell padding="xl">
+      <Container size="xl" fluid>
         <Title order={1} ta="center">Human Genes Viewer</Title>
         <Text ta="center" mb="lg">
           Welcome to the gene data visualization app.
