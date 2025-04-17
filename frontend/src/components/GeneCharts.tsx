@@ -29,64 +29,64 @@ type Props = {
 
 const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFullDataForCharts }) => {
   const [activeChart, setActiveChart] = useState(0);
-  const [topNBiotypes, setTopNBiotypes] = useState<string>('5');
-  const [biotypeChartType, setBiotypeChartType] = useState<'bar' | 'pie'>('bar');
+  const [featureType, setFeatureType] = useState<'biotype' | 'chromosome'>('biotype');
+  const [chartType, setChartType] = useState<'bar' | 'pie'>('bar');
+  const [topN, setTopN] = useState<string>('10');
 
   const theme = useMantineTheme();
   const dynamicColors = theme.colors.blue.slice(0, 30).reverse();
 
-  const biotypeData = useMemo(() => {
+  const getTopNData = (field: keyof Gene) => {
     const counts: Record<string, number> = {};
     genes.forEach((g) => {
-      if (g.biotype) counts[g.biotype] = (counts[g.biotype] || 0) + 1;
+      const value = g[field];
+      if (value) counts[value] = (counts[value] || 0) + 1;
     });
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const top = topNBiotypes === 'all' ? sorted : sorted.slice(0, Number(topNBiotypes));
+    const limit = topN === 'all' ? sorted.length : Number(topN);
+    const top = sorted.slice(0, limit);
     return {
       labels: top.map(([k]) => k),
       values: top.map(([_, v]) => v),
     };
-  }, [genes, topNBiotypes]);
+  };
 
-  const chromosomeData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    genes.forEach((g) => {
-      counts[g.chromosome] = (counts[g.chromosome] || 0) + 1;
-    });
-    const sorted = Object.entries(counts).sort((a, b) => a[0].localeCompare(b[0]));
-    return {
-      labels: sorted.map(([k]) => k),
-      values: sorted.map(([_, v]) => v),
-    };
-  }, [genes]);
-
-  const geneLengths = useMemo(() =>
+  const histogramData = useMemo(() =>
     genes.map(g => g.gene_length).filter(len => typeof len === 'number' && isFinite(len) && len > 0),
     [genes]
   );
 
-  if (genes.length < 10) return null;
+  const featureData = useMemo(() => getTopNData(featureType), [genes, featureType, topN]);
 
   const charts = [
-    biotypeData.labels.length > 1 && (
-      <Stack spacing="xs" key="biotype">
+    featureData.labels.length > 1 && (
+      <Stack spacing="xs" key="topNFeatures">
         <Group position="apart">
-          <Title order={4}>Top Gene Biotypes</Title>
+          <Title order={4}>Top {featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}</Title>
           <Group spacing="xs">
             <SegmentedControl
               size="xs"
+              value={featureType}
+              onChange={(value: 'biotype' | 'chromosome') => setFeatureType(value)}
+              data={[
+                { label: 'Biotype', value: 'biotype' },
+                { label: 'Chromosome', value: 'chromosome' },
+              ]}
+            />
+            <SegmentedControl
+              size="xs"
+              value={chartType}
+              onChange={(value: 'bar' | 'pie') => setChartType(value)}
               data={[
                 { label: 'Bar', value: 'bar' },
                 { label: 'Pie', value: 'pie' },
               ]}
-              value={biotypeChartType}
-              onChange={(value: 'bar' | 'pie') => setBiotypeChartType(value)}
             />
             <Select
               size="xs"
               style={{ width: 100 }}
-              value={topNBiotypes}
-              onChange={(value) => setTopNBiotypes(value!)}
+              value={topN}
+              onChange={(value) => setTopN(value!)}
               data={[
                 { value: '5', label: 'Top 5' },
                 { value: '10', label: 'Top 10' },
@@ -97,54 +97,35 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
         </Group>
         <Plot
           data={[
-            biotypeChartType === 'bar'
+            chartType === 'bar'
               ? {
                   type: 'bar',
-                  x: biotypeData.labels,
-                  y: biotypeData.values,
-                  marker: { color: biotypeData.labels.map((_, i) => dynamicColors[i % dynamicColors.length]) },
+                  x: featureData.labels,
+                  y: featureData.values,
+                  marker: { color: featureData.labels.map((_, i) => dynamicColors[i % dynamicColors.length]) },
                 }
               : {
                   type: 'pie',
-                  labels: biotypeData.labels,
-                  values: biotypeData.values,
+                  labels: featureData.labels,
+                  values: featureData.values,
                   marker: { colors: dynamicColors },
                 },
           ]}
           layout={{
-            title: `Top ${topNBiotypes} Biotypes by Count`,
-            showlegend: biotypeChartType === 'pie',
+            title: `Top ${topN} ${featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}`,
+            showlegend: chartType === 'pie',
             margin: { t: 40, l: 40, r: 30, b: 60 },
           }}
         />
       </Stack>
     ),
-    !filters.chromosome && chromosomeData.labels.length > 0 && (
-      <Stack spacing="xs" key="chromosome">
-        <Title order={4}>Genes per Chromosome</Title>
-        <Plot
-          data={[{
-            type: 'bar',
-            x: chromosomeData.labels,
-            y: chromosomeData.values,
-            marker: { color: 'darkgreen' },
-          }]}
-          layout={{
-            title: 'Gene Count by Chromosome',
-            xaxis: { title: 'Chromosome' },
-            yaxis: { title: 'Count' },
-            margin: { t: 40, l: 40, r: 30, b: 60 },
-          }}
-        />
-      </Stack>
-    ),
-    geneLengths.length > 0 && (
-      <Stack spacing="xs" key="length">
+    histogramData.length > 0 && (
+      <Stack spacing="xs" key="geneLength">
         <Title order={4}>Gene Length Distribution</Title>
         <Plot
           data={[{
             type: 'histogram',
-            x: geneLengths,
+            x: histogramData,
             marker: { color: 'salmon' },
           }]}
           layout={{
@@ -157,6 +138,8 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
       </Stack>
     ),
   ].filter(Boolean);
+
+  if (charts.length === 0) return null;
 
   return (
     <Paper withBorder radius="md" p="md" mt="md">
