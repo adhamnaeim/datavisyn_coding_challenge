@@ -4,7 +4,7 @@ A simple fullstack web application to explore and visualize human gene data usin
 
 - **Backend**: FastAPI (Python), serving data from a CSV
 - **Frontend**: React + TypeScript + Mantine UI
-- **Deployment**: Local development using Uvicorn and Vite
+- **Deployment**: Local development using Uvicorn
 
 ---
 
