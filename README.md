@@ -34,10 +34,24 @@ gene_app/
 └── README.md
 ```
 
----
-
 ## Getting Started
 
+### Docker Deployment Instructions (Optional)
+
+1. From the root of the project:
+   ```bash
+   docker-compose up --build
+   ```
+2. Access the app:
+    - Frontend: http://localhost:3000
+    - Backend:  http://localhost:8000
+
+1. To rebuild after code changes:
+   ```bash
+    docker-compose down
+    docker-compose up --build
+   ````
+---
 ### Backend (FastAPI)
 1. Create virtual environment:
    ```bash
@@ -46,13 +60,13 @@ gene_app/
    ```
 
 2. Install dependencies:
-   ```bash
+   ```bash   
+   cd backend
    pip install -r requirements.txt
    ```
 
 3. Run the API server:
    ```bash
-   cd backend
    uvicorn main:app --reload
    ```
 
@@ -95,7 +109,6 @@ Frontend runs at: `http://localhost:3000`
 - button toggle for dark mode
 - Smooth animations and visual transitions (table collapse, chart slides)
 
----
 
 ## API Highlights
 
@@ -104,7 +117,6 @@ Frontend runs at: `http://localhost:3000`
 - `GET /genes/stats`: Summary stats (total, lengths, biotype dist.)
 - `GET /genes/filters`: Fetch all valid filter options (UI-friendly)
 
----
 
 ## Testing
 
