@@ -1,10 +1,9 @@
-
 # Human Genes Viewer
 
 A simple fullstack web application to explore and visualize human gene data using:
 
 - **Backend**: FastAPI (Python), serving data from a CSV
-- **Frontend**: React + TypeScript
+- **Frontend**: React + TypeScript + Mantine UI
 - **Deployment**: Local development using Uvicorn and Vite
 
 ---
@@ -19,13 +18,16 @@ gene_app/
 │   ├── routes/
 │   ├── services/
 │   ├── tests/
-    ├── data/
-│       ├── genes_human.csv
+│   ├── data/
+│   │   └── genes_human.csv
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── GeneTable.tsx
+│   │   │   ├── GeneTable.tsx
+│   │   │   ├── GeneFilters.tsx
+│   │   │   ├── GeneStats.tsx
+│   │   │   └── GeneCharts.tsx
 │   │   ├── api/
 │   │   │   └── genes.ts
 │   │   └── App.tsx
@@ -82,12 +84,16 @@ Frontend runs at: `http://localhost:3000`
 ## Features
 
 - Loads and displays human gene data from a CSV
+- Responsive UI with Mantine components
 - RESTful API with filtering, sorting, and pagination
-- Search genes by name or symbol
-- Stats endpoint to summarize dataset features
-- Dynamic filtering options (biotype, chromosome, length range)
-- Unit tested with edge cases
-- CSV-based architecture for simplicity and demo-readiness
+- Search genes by symbol, name, or Ensembl ID
+- Dynamic filtering options (chromosome, biotype, gene length)
+- Sortable and paginated data table
+- Interactive charts (bar, pie, histogram, box plot) using Plotly
+- Toggle between partial and full dataset visualization
+- Real-time stat cards for dataset summaries
+- button toggle for dark mode
+- Smooth animations and visual transitions (table collapse, chart slides)
 
 ---
 
