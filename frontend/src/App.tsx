@@ -21,7 +21,7 @@ function App() {
   const [genes, setGenes] = useState<Gene[]>([]);
   const [allGenes, setAllGenes] = useState<Gene[]>([]);
   const [useFullDataForCharts, setUseFullDataForCharts] = useState(false);
-  const [showTable, setShowTable] = useState(true);
+  const [showTable, setShowTable] = useState(false);
 
   const [filters, setFilters] = useState<{
     chromosome?: string;
