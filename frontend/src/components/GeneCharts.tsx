@@ -45,8 +45,15 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
       if (value) counts[value] = (counts[value] || 0) + 1;
     });
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const limit = topN === 'all' ? sorted.length : Number(topN);
-    const top = sorted.slice(0, limit);
+    const limit = Number(topN);
+    let top = sorted.slice(0, limit);
+    const rest = sorted.slice(limit);
+
+    if (rest.length > 0) {
+      const otherTotal = rest.reduce((acc, [, count]) => acc + count, 0);
+      top = [...top, ['Other', otherTotal]];
+    }
+
     return {
       labels: top.map(([k]) => k),
       values: top.map(([_, v]) => v),
@@ -92,7 +99,6 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
               data={[
                 { value: '5', label: 'Top 5' },
                 { value: '10', label: 'Top 10' },
-                { value: 'all', label: 'All' },
               ]}
             />
           </Group>
@@ -186,6 +192,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
     ),
   ];
 
+  if (charts.length === 0) return null;
   return (
     <Paper withBorder radius="md" p="md" mt="md">
       <Group position="apart" mb="sm">
