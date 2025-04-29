@@ -123,8 +123,16 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
             ]}
             layout={{
               title: `Top ${topN} ${featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}`,
-              showlegend: chartType === 'pie',
-              margin: { t: 40, l: 40, r: 30, b: 60 },
+              barmode: 'group',
+              xaxis: {
+                title: { text: featureType === 'biotype' ? 'Biotype' : 'Chromosome' },
+                automargin: true,
+              },
+              yaxis: {
+                title: { text: 'Gene Count' },
+                automargin: true,
+              },
+              margin: { t: 40, l: 50, r: 30, b: 70 },
             }}
           />
         ) : (
@@ -161,9 +169,16 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
               }]}
               layout={{
                 title: 'Distribution of Gene Lengths',
-                xaxis: { title: 'Gene Length (bp)' },
-                yaxis: { title: 'Frequency' },
-                margin: { t: 40, l: 40, r: 30, b: 60 },
+                xaxis: { 
+                  title: { text: 'Gene Length (bp)' },
+                  automargin: true,
+                },
+                yaxis: { 
+                  title: { text: 'Frequency' },
+                  automargin: true,
+                },
+                margin: { t: 40, l: 50, r: 30, b: 70 },
+                bargap: 0.05,
               }}
             />
           ) : (
@@ -178,8 +193,11 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
               }]}
               layout={{
                 title: 'Gene Length Box Plot',
-                yaxis: { title: 'Gene Length (bp)' },
-                margin: { t: 40, l: 40, r: 30, b: 60 },
+                yaxis: { 
+                  title: { text: 'Gene Length (bp)' },
+                  automargin: true,
+                },
+                margin: { t: 40, l: 50, r: 30, b: 70 },
               }}
             />
           )
