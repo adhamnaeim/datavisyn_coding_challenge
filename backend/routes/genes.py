@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.get("/genes", response_model=Dict[str, Any])
 def read_genes(
-    limit: int = 100,
+    limit: Optional[int] = None,
     offset: int = 0,
     chromosome: Optional[str] = Query(None),
     biotype: Optional[str] = Query(None),

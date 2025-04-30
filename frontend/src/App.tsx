@@ -76,7 +76,7 @@ function App() {
   };
 
   const [filterSearch, setFIlterSearch] = useState(true);
-  
+
   useEffect(() => {
     fetch(`http://localhost:8000/genes?${buildParams(true).toString()}`)
       .then(res => res.json())
@@ -87,12 +87,10 @@ function App() {
   }, [filters, sort, order, search, offset, limit, filterSearch]);
 
   useEffect(() => {
-    if (useFullDataForCharts) {
-      fetch(`http://localhost:8000/genes?${buildParams(false, false).toString()}`)
-        .then(res => res.json())
-        .then(data => setAllGenes(data.results));
-    }
-  }, [filters, sort, order, search, useFullDataForCharts]);
+    fetch(`http://localhost:8000/genes?${buildParams(false, false).toString()}`)
+      .then(res => res.json())
+      .then(data => setAllGenes(data.results));
+  }, [filters, sort, order, search]);
 
   const handlePrev = () => setOffset(prev => Math.max(0, prev - limit));
   const handleNext = () => setOffset(prev => prev + limit);
@@ -194,6 +192,7 @@ function App() {
                 {(styles) => (
                   <div style={styles}>
                     <GeneTable
+                      allGenes={allGenes}
                       genes={genes}
                       sort={sort}
                       order={order}

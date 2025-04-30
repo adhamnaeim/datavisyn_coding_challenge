@@ -11,9 +11,11 @@ import {
 import { Gene } from '../types/gene';
 import DetailRow from './detailRow';
 import { exportGenesToCSV } from '../utils/export';
+import ExportWarningPopover from './ExportWarningPopover';
 
 type Props = {
   genes: Gene[];
+  allGenes: Gene[]; 
   sort?: string;
   order?: 'asc' | 'desc';
   onSortChange: (field: string) => void;
@@ -33,7 +35,15 @@ const highlight = (text: string, term?: string) => {
   );
 };
 
-const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, filterSearch }) => {
+const GeneTable: React.FC<Props> = ({
+  genes,
+  allGenes,
+  sort,
+  order,
+  onSortChange,
+  search,
+  filterSearch,
+}) => {
   const [opened, setOpened] = useState(false);
   const [selectedGene, setSelectedGene] = useState<Gene | null>(null);
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
@@ -136,8 +146,9 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, 
             variant="light"
             onClick={() => exportGenesToCSV(genes, 'filtered_genes')}
           >
-            Export Filtered
+            Export Page
           </Button>
+          <ExportWarningPopover onConfirm={() => exportGenesToCSV(allGenes, 'full_filtered_genes')} />
         </Group>
 
         <Button
@@ -186,23 +197,26 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, 
         title={
           <Group position="apart">
             <Title order={4}>Selected Genes ({selectedGenes.length})</Title>
+          <Group spacing="xs">
             <Button
               size="xs"
               color="red"
               onClick={() => {
                 setSelectedGenes([]);
-                setSelectedDrawerOpen(false);}}
+                setSelectedDrawerOpen(false);
+              }}
             >
               Clear All
             </Button>
             <Button
-            size="xs"
-            variant="light"
-            disabled={selectedGenes.length === 0}
-            onClick={() => exportGenesToCSV(selectedGenes, 'selected_genes')}
-          >
-            Export Selected
-          </Button>
+              size="xs"
+              variant="light"
+              disabled={selectedGenes.length === 0}
+              onClick={() => exportGenesToCSV(selectedGenes, 'selected_genes')}
+            >
+              Export Selected
+            </Button>
+          </Group>
           </Group>
         }
         padding="md"
@@ -210,11 +224,14 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, 
         position="right"
       >
         {selectedGenes.map((g) => (
-          <div key={g.ensembl} style={{ marginBottom: '1rem', borderBottom: '1px solid #ccc' }}>
+          <div
+            key={g.ensembl}
+            style={{ marginBottom: '1rem', borderBottom: '1px solid #ccc' }}
+          >
             <DetailRow gene={g} onRemove={() => removeOne(g.ensembl)} />
           </div>
         ))}
-    </Drawer>
+      </Drawer>
     </>
   );
 };

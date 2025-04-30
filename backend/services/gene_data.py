@@ -58,8 +58,8 @@ def get_filtered_genes(
         }
         filtered_df = filtered_df.sort_values(by=sort_map[sort], ascending=(order != "desc"))
 
-    if limit is not None and offset is not None:
-        filtered_df = filtered_df.iloc[offset:offset+limit]
+    if limit is not None:
+        filtered_df = filtered_df.iloc[offset or 0 : (offset or 0) + limit]
 
     genes = [
         Gene(
