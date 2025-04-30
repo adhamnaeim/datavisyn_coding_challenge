@@ -73,10 +73,15 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
         <Group position="apart">
           <Title order={4}>Top {featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}</Title>
           <Group spacing="xs">
-            <SegmentedControl
+          <SegmentedControl
               size="xs"
               value={featureType}
-              onChange={(value: 'biotype' | 'chromosome') => setFeatureType(value)}
+              onChange={(value: 'biotype' | 'chromosome') => {
+                if (value === 'chromosome' && chartType === 'bar') {
+                  setChartType('pie');
+                }
+                setFeatureType(value);
+              }}
               data={[
                 { label: 'Biotype', value: 'biotype' },
                 { label: 'Chromosome', value: 'chromosome' },
@@ -87,7 +92,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
               value={chartType}
               onChange={(value: 'bar' | 'pie') => setChartType(value)}
               data={[
-                { label: 'Bar', value: 'bar' },
+                { label: 'Bar', value: 'bar', disabled: featureType === 'chromosome' },
                 { label: 'Pie', value: 'pie' },
               ]}
             />
