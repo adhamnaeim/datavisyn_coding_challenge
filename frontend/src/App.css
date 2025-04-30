@@ -24,3 +24,7 @@ body {
     min-width: 600px;
   }
 }
+
+.highlight-row {
+  background-color: #fef9c3 !important; 
+}

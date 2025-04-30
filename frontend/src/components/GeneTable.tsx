@@ -9,6 +9,7 @@ type Props = {
   order?: 'asc' | 'desc';
   onSortChange: (field: string) => void;
   search?: string;
+  filterSearch: boolean;
 };
 
 const highlight = (text: string, term?: string) => {
@@ -19,7 +20,7 @@ const highlight = (text: string, term?: string) => {
   );
 };
 
-const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search }) => {
+const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, filterSearch }) => {
   const [opened, setOpened] = useState(false);
   const [selectedGene, setSelectedGene] = useState<Gene | null>(null);
 
@@ -38,18 +39,32 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search }
     );
   };
 
-  const rows = genes.map((gene) => (
-    <tr key={gene.ensembl} onClick={() => handleRowClick(gene)} style={{ cursor: 'pointer' }}>
-      <td>{highlight(gene.ensembl, search)}</td>
-      <td>{gene.gene_symbol ? highlight(gene.gene_symbol, search) : '-'}</td>
-      <td>{gene.name ? highlight(gene.name, search) : '-'}</td>
-      <td>{gene.biotype || '-'}</td>
-      <td>{gene.chromosome}</td>
-      <td>{gene.start}</td>
-      <td>{gene.end}</td>
-      <td>{gene.gene_length}</td>
-    </tr>
-  ));
+  const rows = genes.map((gene) => {
+    const match =
+      search &&
+      !filterSearch &&
+      Object.values(gene).some(
+        (v) => typeof v === 'string' && v.toLowerCase().includes(search.toLowerCase())
+      );
+  
+    return (
+      <tr
+        key={gene.ensembl}
+        onClick={() => handleRowClick(gene)}
+        style={{ cursor: 'pointer' }}
+        className={match ? 'highlight-row' : ''}
+      >
+        <td>{highlight(gene.ensembl, search)}</td>
+        <td>{gene.gene_symbol ? highlight(gene.gene_symbol, search) : '-'}</td>
+        <td>{gene.name ? highlight(gene.name, search) : '-'}</td>
+        <td>{gene.biotype || '-'}</td>
+        <td>{gene.chromosome}</td>
+        <td>{gene.start}</td>
+        <td>{gene.end}</td>
+        <td>{gene.gene_length}</td>
+      </tr>
+    );
+  });
 
   return (
     <>

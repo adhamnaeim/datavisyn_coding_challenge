@@ -15,7 +15,7 @@ import {
   Group,
   Stack,
   Select,
-  Collapse,
+  Switch,
   Paper,
   Transition,
   ActionIcon,
@@ -63,7 +63,7 @@ function App() {
     if (filters.biotype) params.append('biotype', filters.biotype);
     if (filters.minLength) params.append('min_length', String(filters.minLength));
     if (filters.maxLength) params.append('max_length', String(filters.maxLength));
-    if (search) params.append('search', search);
+    if (search && filterSearch) params.append('search', search);
     if (includeSorting && sort) {
       params.append('sort', sort);
       params.append('order', order);
@@ -75,6 +75,8 @@ function App() {
     return params;
   };
 
+  const [filterSearch, setFIlterSearch] = useState(true);
+  
   useEffect(() => {
     fetch(`http://localhost:8000/genes?${buildParams(true).toString()}`)
       .then(res => res.json())
@@ -82,7 +84,7 @@ function App() {
         setGenes(data.results);
         setTotal(data.total);
       });
-  }, [filters, sort, order, search, offset, limit]);
+  }, [filters, sort, order, search, offset, limit, filterSearch]);
 
   useEffect(() => {
     if (useFullDataForCharts) {
@@ -140,6 +142,12 @@ function App() {
 
           <Paper shadow="xs" radius="md" p="md" className="themed-card">
             <Stack>
+              <Switch
+                  label="filter by search term only"
+                  checked={filterSearch}
+                  onChange={(event) => setFIlterSearch(event.currentTarget.checked)}
+                  size="xs"
+              />
               <TextInput
                 placeholder="Search genes..."
                 value={search}
@@ -190,6 +198,7 @@ function App() {
                       sort={sort}
                       order={order}
                       search={search}
+                      filterSearch={filterSearch}
                       onSortChange={(field) => {
                         setOffset(0);
                         setSort(field);
