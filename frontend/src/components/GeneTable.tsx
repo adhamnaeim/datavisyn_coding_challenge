@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import { Gene } from '../types/gene';
 import DetailRow from './detailRow';
+import { exportGenesToCSV } from '../utils/export';
 
 type Props = {
   genes: Gene[];
@@ -129,7 +130,16 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, 
   return (
     <>
       <Group position="apart" mb="xs">
-        <div></div>
+        <Group>
+          <Button
+            size="xs"
+            variant="light"
+            onClick={() => exportGenesToCSV(genes, 'filtered_genes')}
+          >
+            Export Filtered
+          </Button>
+        </Group>
+
         <Button
           onClick={() => setSelectedDrawerOpen(true)}
           disabled={selectedGenes.length === 0}
@@ -185,6 +195,14 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search, 
             >
               Clear All
             </Button>
+            <Button
+            size="xs"
+            variant="light"
+            disabled={selectedGenes.length === 0}
+            onClick={() => exportGenesToCSV(selectedGenes, 'selected_genes')}
+          >
+            Export Selected
+          </Button>
           </Group>
         }
         padding="md"
