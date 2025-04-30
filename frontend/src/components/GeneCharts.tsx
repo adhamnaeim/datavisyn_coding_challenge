@@ -10,6 +10,7 @@ import {
   Switch,
   Select,
   SegmentedControl,
+  Text,
   useMantineTheme,
 } from '@mantine/core';
 
@@ -37,15 +38,35 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
   const theme = useMantineTheme();
   const dynamicColors = theme.colors.blue.slice(0, 30).reverse();
 
-  const getTopNData = (field: keyof Gene) => {
+  const ALL_CHROMOSOMES = [
+    '1','2','3','4','5','6','7','8','9','10','11','12',
+    '13','14','15','16','17','18','19','20','21','22','X','Y','MT'
+  ];
+
+  const getTopNData = (field: keyof Gene, isBar: boolean) => {
     const counts: Record<string, number> = {};
     genes.forEach((g) => {
       const value = g[field];
       if (value) counts[value] = (counts[value] || 0) + 1;
     });
+
+    if (field === 'chromosome' && isBar) {
+      return {
+        labels: ALL_CHROMOSOMES,
+        values: ALL_CHROMOSOMES.map((chr) => counts[chr] || 0),
+      };
+    }
+
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    const limit = topN === 'all' ? sorted.length : Number(topN);
-    const top = sorted.slice(0, limit);
+    const limit = Number(topN);
+    let top = sorted.slice(0, limit);
+    const rest = sorted.slice(limit);
+
+    if (rest.length > 0) {
+      const otherTotal = rest.reduce((acc, [, count]) => acc + count, 0);
+      top = [...top, ['Other', otherTotal]];
+    }
+
     return {
       labels: top.map(([k]) => k),
       values: top.map(([_, v]) => v),
@@ -57,10 +78,13 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
     [genes]
   );
 
-  const featureData = useMemo(() => getTopNData(featureType), [genes, featureType, topN]);
+  const featureData = useMemo(
+    () => getTopNData(featureType, chartType === 'bar'),
+    [genes, featureType, topN, chartType]
+  );
 
   const charts = [
-    featureData.labels.length > 1 && (
+    (
       <Stack spacing="xs" key="topNFeatures">
         <Group position="apart">
           <Title order={4}>Top {featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}</Title>
@@ -68,7 +92,12 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
             <SegmentedControl
               size="xs"
               value={featureType}
-              onChange={(value: 'biotype' | 'chromosome') => setFeatureType(value)}
+              onChange={(value: 'biotype' | 'chromosome') => {
+                if (value === 'chromosome' && chartType === 'bar') {
+                  setChartType('pie');
+                }
+                setFeatureType(value);
+              }}
               data={[
                 { label: 'Biotype', value: 'biotype' },
                 { label: 'Chromosome', value: 'chromosome' },
@@ -79,7 +108,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
               value={chartType}
               onChange={(value: 'bar' | 'pie') => setChartType(value)}
               data={[
-                { label: 'Bar', value: 'bar' },
+                { label: 'Bar', value: 'bar', disabled: featureType === 'chromosome' },
                 { label: 'Pie', value: 'pie' },
               ]}
             />
@@ -91,36 +120,50 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
               data={[
                 { value: '5', label: 'Top 5' },
                 { value: '10', label: 'Top 10' },
-                { value: 'all', label: 'All' },
               ]}
             />
           </Group>
         </Group>
-        <Plot
-          data={[
-            chartType === 'bar'
-              ? {
-                  type: 'bar',
-                  x: featureData.labels,
-                  y: featureData.values,
-                  marker: { color: featureData.labels.map((_, i) => dynamicColors[i % dynamicColors.length]) },
-                }
-              : {
-                  type: 'pie',
-                  labels: featureData.labels,
-                  values: featureData.values,
-                  marker: { colors: dynamicColors },
-                },
-          ]}
-          layout={{
-            title: `Top ${topN} ${featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}`,
-            showlegend: chartType === 'pie',
-            margin: { t: 40, l: 40, r: 30, b: 60 },
-          }}
-        />
+
+        {featureData.labels.length > 0 ? (
+          <Plot
+            data={[
+              chartType === 'bar'
+                ? {
+                    type: 'bar',
+                    x: featureData.labels,
+                    y: featureData.values,
+                    marker: { color: featureData.labels.map((_, i) => dynamicColors[i % dynamicColors.length]) },
+                  }
+                : {
+                    type: 'pie',
+                    labels: featureData.labels,
+                    values: featureData.values,
+                    marker: { colors: dynamicColors },
+                  },
+            ]}
+            layout={{
+              title: `Top ${topN} ${featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}`,
+              barmode: 'group',
+              xaxis: {
+                title: { text: featureType === 'biotype' ? 'Biotype' : 'Chromosome' },
+                automargin: true,
+              },
+              yaxis: {
+                title: { text: 'Gene Count' },
+                automargin: true,
+              },
+              margin: { t: 40, l: 50, r: 30, b: 70 },
+            }}
+          />
+        ) : (
+          <Text align="center" color="dimmed" size="sm" mt="md">
+            No data available for this filter.
+          </Text>
+        )}
       </Stack>
     ),
-    histogramData.length > 0 && (
+    (
       <Stack spacing="xs" key="geneLength">
         <Group position="apart">
           <Title order={4}>Gene Length Distribution</Title>
@@ -134,42 +177,59 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
             ]}
           />
         </Group>
-        {lengthChartType === 'histogram' ? (
-          <Plot
-            data={[{
-              type: 'histogram',
-              x: histogramData,
-              marker: {
-                color: histogramData.map((_, i) => dynamicColors[i % dynamicColors.length]),
-              },
-            }]}
-            layout={{
-              title: 'Distribution of Gene Lengths',
-              xaxis: { title: 'Gene Length (bp)' },
-              yaxis: { title: 'Frequency' },
-              margin: { t: 40, l: 40, r: 30, b: 60 },
-            }}
-          />
+
+        {histogramData.length > 0 ? (
+          lengthChartType === 'histogram' ? (
+            <Plot
+              data={[{
+                type: 'histogram',
+                x: histogramData,
+                marker: {
+                  color: histogramData.map((_, i) => dynamicColors[i % dynamicColors.length]),
+                },
+              }]}
+              layout={{
+                title: 'Distribution of Gene Lengths',
+                xaxis: { 
+                  title: { text: 'Gene Length (bp)' },
+                  automargin: true,
+                },
+                yaxis: { 
+                  title: { text: 'Frequency' },
+                  automargin: true,
+                },
+                margin: { t: 40, l: 50, r: 30, b: 70 },
+                bargap: 0.05,
+              }}
+            />
+          ) : (
+            <Plot
+              data={[{
+                type: 'box',
+                y: histogramData,
+                boxpoints: 'all',
+                jitter: 0.3,
+                pointpos: 0,
+                marker: { color: dynamicColors[0] },
+              }]}
+              layout={{
+                title: 'Gene Length Box Plot',
+                yaxis: { 
+                  title: { text: 'Gene Length (bp)' },
+                  automargin: true,
+                },
+                margin: { t: 40, l: 50, r: 30, b: 70 },
+              }}
+            />
+          )
         ) : (
-          <Plot
-            data={[{
-              type: 'box',
-              y: histogramData,
-              boxpoints: 'all',
-              jitter: 0.3,
-              pointpos: 0,
-              marker: { color: dynamicColors[0] },
-            }]}
-            layout={{
-              title: 'Gene Length Box Plot',
-              yaxis: { title: 'Gene Length (bp)' },
-              margin: { t: 40, l: 40, r: 30, b: 60 },
-            }}
-          />
+          <Text align="center" color="dimmed" size="sm" mt="md">
+            No gene length data available.
+          </Text>
         )}
       </Stack>
     ),
-  ].filter(Boolean);
+  ];
 
   if (charts.length === 0) return null;
 
