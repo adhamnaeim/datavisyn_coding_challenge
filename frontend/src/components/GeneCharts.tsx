@@ -38,12 +38,25 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
   const theme = useMantineTheme();
   const dynamicColors = theme.colors.blue.slice(0, 30).reverse();
 
-  const getTopNData = (field: keyof Gene) => {
+  const ALL_CHROMOSOMES = [
+    '1','2','3','4','5','6','7','8','9','10','11','12',
+    '13','14','15','16','17','18','19','20','21','22','X','Y','MT'
+  ];
+
+  const getTopNData = (field: keyof Gene, isBar: boolean) => {
     const counts: Record<string, number> = {};
     genes.forEach((g) => {
       const value = g[field];
       if (value) counts[value] = (counts[value] || 0) + 1;
     });
+
+    if (field === 'chromosome' && isBar) {
+      return {
+        labels: ALL_CHROMOSOMES,
+        values: ALL_CHROMOSOMES.map((chr) => counts[chr] || 0),
+      };
+    }
+
     const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     const limit = Number(topN);
     let top = sorted.slice(0, limit);
@@ -65,7 +78,10 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
     [genes]
   );
 
-  const featureData = useMemo(() => getTopNData(featureType), [genes, featureType, topN]);
+  const featureData = useMemo(
+    () => getTopNData(featureType, chartType === 'bar'),
+    [genes, featureType, topN, chartType]
+  );
 
   const charts = [
     (
@@ -73,7 +89,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
         <Group position="apart">
           <Title order={4}>Top {featureType === 'biotype' ? 'Biotypes' : 'Chromosomes'}</Title>
           <Group spacing="xs">
-          <SegmentedControl
+            <SegmentedControl
               size="xs"
               value={featureType}
               onChange={(value: 'biotype' | 'chromosome') => {
@@ -216,6 +232,7 @@ const GeneCharts: React.FC<Props> = ({ genes, filters, onToggleDataScope, useFul
   ];
 
   if (charts.length === 0) return null;
+
   return (
     <Paper withBorder radius="md" p="md" mt="md">
       <Group position="apart" mb="sm">

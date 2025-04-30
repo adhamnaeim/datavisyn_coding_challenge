@@ -56,15 +56,17 @@ function App() {
   const [limit, setLimit] = useState<number>(50);
   const [total, setTotal] = useState<number>(0);
 
-  const buildParams = (includePagination = true) => {
+  const buildParams = (includePagination = true, includeSorting = true) => {
     const params = new URLSearchParams();
     if (filters.chromosome) params.append('chromosome', filters.chromosome);
     if (filters.biotype) params.append('biotype', filters.biotype);
     if (filters.minLength) params.append('min_length', String(filters.minLength));
     if (filters.maxLength) params.append('max_length', String(filters.maxLength));
     if (search) params.append('search', search);
-    if (sort) params.append('sort', sort);
-    if (order) params.append('order', order);
+    if (includeSorting && sort) {
+      params.append('sort', sort);
+      params.append('order', order);
+    }
     if (includePagination) {
       params.append('offset', offset.toString());
       params.append('limit', limit.toString());
@@ -83,7 +85,7 @@ function App() {
 
   useEffect(() => {
     if (useFullDataForCharts) {
-      fetch(`http://localhost:8000/genes?${buildParams(false).toString()}`)
+      fetch(`http://localhost:8000/genes?${buildParams(false, false).toString()}`)
         .then(res => res.json())
         .then(data => setAllGenes(data.results));
     }

@@ -15,8 +15,8 @@ def safe_str(val):
     return str(val) if pd.notna(val) else None
 
 def get_filtered_genes(
-    limit: int = 100,
-    offset: int = 0,
+    limit: Optional[int] = None,
+    offset: Optional[int] = None,
     chromosome: Optional[str] = None,
     biotype: Optional[str] = None,
     min_length: Optional[int] = None,
@@ -41,7 +41,6 @@ def get_filtered_genes(
             filtered_df['Name'].astype(str).str.contains(search, case=False, na=False) |
             filtered_df['Ensembl'].astype(str).str.contains(search, case=False, na=False) |
             filtered_df['Biotype'].astype(str).str.contains(search, case=False, na=False)
-
         ]
 
     total = len(filtered_df)
@@ -59,7 +58,8 @@ def get_filtered_genes(
         }
         filtered_df = filtered_df.sort_values(by=sort_map[sort], ascending=(order != "desc"))
 
-    result = filtered_df.iloc[offset:offset+limit]
+    if limit is not None and offset is not None:
+        filtered_df = filtered_df.iloc[offset:offset+limit]
 
     genes = [
         Gene(
@@ -72,7 +72,7 @@ def get_filtered_genes(
             end=int(row['Seq region end']),
             gene_length=int(row['GeneLength'])
         )
-        for _, row in result.iterrows()
+        for _, row in filtered_df.iterrows()
     ]
 
     return total, genes
