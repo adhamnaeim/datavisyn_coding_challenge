@@ -165,7 +165,16 @@ const GeneTable: React.FC<Props> = ({
         <Table striped highlightOnHover withBorder withColumnBorders>
           <thead>
             <tr>
-              <th></th>
+            <th style={{ cursor: 'pointer' }} onClick={() => {
+                const allSelected = genes.every((g) => selectedGenes.some((s) => s.ensembl === g.ensembl));
+                setSelectedGenes((prev) =>
+                  allSelected
+                    ? prev.filter((g) => !genes.some((current) => current.ensembl === g.ensembl))
+                    : [...prev, ...genes.filter((g) => !prev.some((s) => s.ensembl === g.ensembl))]
+                );
+              }}>
+                {genes.every((g) => selectedGenes.some((s) => s.ensembl === g.ensembl)) ? '☑' : '☐'}
+              </th>
               {renderHeader('Ensembl', 'ensembl')}
               {renderHeader('Symbol', 'gene_symbol')}
               {renderHeader('Name', 'name')}
