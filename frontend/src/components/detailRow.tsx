@@ -6,11 +6,13 @@ import {
   Button,
   Tooltip,
   Group,
+  ActionIcon,
 } from '@mantine/core';
 import { Gene } from '../types/gene';
 
 type Props = {
   gene: Gene;
+  onRemove?: () => void;
 };
 
 const CopyableCell = ({ value }: { value?: string | number }) => {
@@ -40,12 +42,23 @@ const CopyableCell = ({ value }: { value?: string | number }) => {
   );
 };
 
-const DetailRow: React.FC<Props> = ({ gene }) => {
+const DetailRow: React.FC<Props> = ({ gene, onRemove }) => {
   return (
     <Paper p="md" shadow="xs" withBorder>
-      <Title order={4} mb="md">
-        Gene Details
-      </Title>
+      <Group position="apart" mb="sm">
+        <Title order={5}>{gene.ensembl}</Title>
+        {onRemove && (
+            <ActionIcon
+              size="sm"
+              color="red"
+              variant="light"
+              onClick={onRemove}
+            >
+              ✕
+            </ActionIcon>
+        )}
+      </Group>
+
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <tbody>
           <tr>
@@ -62,11 +75,11 @@ const DetailRow: React.FC<Props> = ({ gene }) => {
           </tr>
           <tr>
             <td style={{ fontWeight: 600 }}>Biotype</td>
-            <td>{gene.biotype || '-'}</td>
+            <CopyableCell value={gene.biotype || '-'} />
           </tr>
           <tr>
             <td style={{ fontWeight: 600 }}>Chromosome</td>
-            <td>{gene.chromosome}</td>
+            <CopyableCell value={gene.chromosome}/>
           </tr>
           <tr>
             <td style={{ fontWeight: 600 }}>Start</td>
