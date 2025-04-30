@@ -140,25 +140,17 @@ const GeneTable: React.FC<Props> = ({
   return (
     <>
       <Group position="apart" mb="xs">
-        <Group>
-          <Button
-            size="xs"
-            variant="light"
-            onClick={() => exportGenesToCSV(genes, 'filtered_genes')}
+        <Button
+          size="xs"
+          variant="light"
+          onClick={() => exportGenesToCSV(genes, 'filtered_genes')}
           >
-            Export Page
-          </Button>
+          Export Page
+        </Button>
+        <Group>
           <ExportWarningPopover onConfirm={() => exportGenesToCSV(allGenes, 'full_filtered_genes')} />
         </Group>
 
-        <Button
-          onClick={() => setSelectedDrawerOpen(true)}
-          disabled={selectedGenes.length === 0}
-          size="xs"
-          variant="light"
-        >
-          View {selectedGenes.length} Selected
-        </Button>
       </Group>
 
       <ScrollArea>
@@ -241,7 +233,48 @@ const GeneTable: React.FC<Props> = ({
           </div>
         ))}
       </Drawer>
+      {selectedGenes.length > 0 && !selectedDrawerOpen && (
+          <div
+          style={{
+            position: 'fixed',
+            top: '50%',
+            right: 0,
+            transform: 'translateY(-50%)',
+            zIndex: 1000,
+            transition: 'right 0.3s ease',
+          }}
+        >
+          <div
+            style={{
+              padding: '0.5rem 0',
+              backgroundColor: '#1c7ed6',
+              color: 'white',
+              borderTopLeftRadius: '9999px',
+              borderBottomLeftRadius: '9999px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+              writingMode: 'vertical-rl',
+              textOrientation: 'mixed',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              transition: 'transform 0.3s ease',
+              transform: 'translateX(0)',
+            }}
+            onClick={() => setSelectedDrawerOpen(true)}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLDivElement).style.transform = 'translateX(-10px)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLDivElement).style.transform = 'translateX(0)';
+            }}
+          >
+            Selected<br />({selectedGenes.length})
+          </div>
+        </div>
+      )}
     </>
+
   );
 };
 
