@@ -1,16 +1,7 @@
-import React from 'react';
-import { Table, ScrollArea } from '@mantine/core';
-
-export type Gene = {
-  ensembl: string;
-  gene_symbol?: string;
-  name?: string;
-  biotype?: string;
-  chromosome: string;
-  start: number;
-  end: number;
-  gene_length: number;
-};
+import React, { useState } from 'react';
+import { Table, ScrollArea, Drawer } from '@mantine/core';
+import { Gene } from '../types/gene';
+import DetailRow from './detailRow';
 
 type Props = {
   genes: Gene[];
@@ -29,6 +20,14 @@ const highlight = (text: string, term?: string) => {
 };
 
 const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search }) => {
+  const [opened, setOpened] = useState(false);
+  const [selectedGene, setSelectedGene] = useState<Gene | null>(null);
+
+  const handleRowClick = (gene: Gene) => {
+    setSelectedGene(gene);
+    setOpened(true);
+  };
+
   const renderHeader = (label: string, field: string) => {
     const isSorted = sort === field;
     const arrow = isSorted ? (order === 'asc' ? ' ▲' : ' ▼') : '';
@@ -40,7 +39,7 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search }
   };
 
   const rows = genes.map((gene) => (
-    <tr key={gene.ensembl}>
+    <tr key={gene.ensembl} onClick={() => handleRowClick(gene)} style={{ cursor: 'pointer' }}>
       <td>{highlight(gene.ensembl, search)}</td>
       <td>{gene.gene_symbol ? highlight(gene.gene_symbol, search) : '-'}</td>
       <td>{gene.name ? highlight(gene.name, search) : '-'}</td>
@@ -53,28 +52,36 @@ const GeneTable: React.FC<Props> = ({ genes, sort, order, onSortChange, search }
   ));
 
   return (
-    <ScrollArea>
-        <Table
-            striped
-            highlightOnHover
-            withBorder
-            withColumnBorders
-        >
-            <thead>
-          <tr>
-            {renderHeader("Ensembl", "ensembl")}
-            {renderHeader("Symbol", "gene_symbol")}
-            {renderHeader("Name", "name")}
-            {renderHeader("Biotype", "biotype")}
-            {renderHeader("Chromosome", "chromosome")}
-            {renderHeader("Start", "start")}
-            {renderHeader("End", "end")}
-            {renderHeader("Gene Length", "gene_length")}
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </Table>
-    </ScrollArea>
+    <>
+      <ScrollArea>
+        <Table striped highlightOnHover withBorder withColumnBorders>
+          <thead>
+            <tr>
+              {renderHeader("Ensembl", "ensembl")}
+              {renderHeader("Symbol", "gene_symbol")}
+              {renderHeader("Name", "name")}
+              {renderHeader("Biotype", "biotype")}
+              {renderHeader("Chromosome", "chromosome")}
+              {renderHeader("Start", "start")}
+              {renderHeader("End", "end")}
+              {renderHeader("Gene Length", "gene_length")}
+            </tr>
+          </thead>
+          <tbody>{rows}</tbody>
+        </Table>
+      </ScrollArea>
+
+      <Drawer
+        opened={opened}
+        onClose={() => setOpened(false)}
+        title="Gene Details"
+        padding="md"
+        size="xl"
+        position="right"
+      >
+        {selectedGene && <DetailRow gene={selectedGene} />}
+      </Drawer>
+    </>
   );
 };
 

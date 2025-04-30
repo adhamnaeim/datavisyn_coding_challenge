@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import GeneTable, { Gene } from './components/GeneTable';
+import GeneTable from './components/GeneTable';
+import { Gene } from './types/gene';
 import GeneFilters from './components/GeneFilters';
 import GeneStats from './components/GeneStats';
 import GeneCharts from './components/GeneCharts';
