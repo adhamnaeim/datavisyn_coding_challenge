@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Body
+from fastapi.responses import JSONResponse
 from typing import List, Optional, Dict, Any
 from models.gene import Gene
 from services.gene_data import (
@@ -6,13 +7,14 @@ from services.gene_data import (
     get_gene_by_id,
     get_gene_stats,
     get_filter_options,
+    append_genes_to_csv,
 )
 
 router = APIRouter()
 
 @router.get("/genes", response_model=Dict[str, Any])
 def read_genes(
-    limit: int = 100,
+    limit: Optional[int] = None,
     offset: int = 0,
     chromosome: Optional[str] = Query(None),
     biotype: Optional[str] = Query(None),
@@ -54,3 +56,11 @@ def read_gene_by_id(ensembl_id: str):
     if not gene:
         raise HTTPException(status_code=404, detail="Gene not found")
     return gene
+
+@router.post("/genes")
+def add_genes(new_genes: List[Gene] = Body(...)):
+    try:
+        append_genes_to_csv(new_genes)
+        return {"status": "success", "added": len(new_genes)}
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Gene } from '../components/GeneTable';
+import { Gene } from '../types/gene';
 
 const API_BASE = 'http://localhost:8000';
 

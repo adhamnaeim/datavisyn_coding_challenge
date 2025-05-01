@@ -19,21 +19,27 @@ type GeneStatsData = {
     max: number;
     mean: number;
   };
+  null_counts: {
+    gene_symbol: number;
+    name: number;
+    biotype: number;
+    chromosome: number;
+  };
 };
 
 type Props = {
-    onBiotypeSelect?: (biotype: string) => void;
-  };
+  onBiotypeSelect?: (biotype: string) => void;
+  refreshKey?: number;
+};
 
-const GeneStats: React.FC<Props> = ({ onBiotypeSelect }) => {
-    const [stats, setStats] = useState<GeneStatsData | null>(null);
-    
-    useEffect(() => {
-        fetch('http://localhost:8000/genes/stats')
-        .then(res => res.json())
-        .then(data => setStats(data));
-    }, []);
-    
+const GeneStats: React.FC<Props> = ({ onBiotypeSelect, refreshKey }) => {
+  const [stats, setStats] = useState<GeneStatsData | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/genes/stats')
+      .then(res => res.json())
+      .then(data => setStats(data));
+  }, [refreshKey]);
 
   if (!stats) return <Loader variant="dots" />;
 
@@ -68,6 +74,16 @@ const GeneStats: React.FC<Props> = ({ onBiotypeSelect }) => {
                 </Badge>
               ))}
             </Group>
+
+            <div style={{ marginTop: '1rem' }}>
+              <Text fw={700}>Missing Values:</Text>
+              <Stack spacing={2}>
+                <Text size="sm">Gene Symbol: {stats.null_counts.gene_symbol.toLocaleString()}</Text>
+                <Text size="sm">Name: {stats.null_counts.name.toLocaleString()}</Text>
+                <Text size="sm">Biotype: {stats.null_counts.biotype.toLocaleString()}</Text>
+                <Text size="sm">Chromosome: {stats.null_counts.chromosome.toLocaleString()}</Text>
+              </Stack>
+            </div>
           </Stack>
         </Grid.Col>
       </Grid>
