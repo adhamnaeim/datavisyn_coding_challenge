@@ -12,6 +12,7 @@ import { Gene } from '../types/gene';
 import DetailRow from './detailRow';
 import { exportGenesToCSV } from '../utils/export';
 import ExportWarningPopover from './ExportWarningPopover';
+import GeneCharts from './GeneCharts';
 
 type Props = {
   genes: Gene[];
@@ -48,6 +49,7 @@ const GeneTable: React.FC<Props> = ({
   const [selectedGene, setSelectedGene] = useState<Gene | null>(null);
   const [selectedGenes, setSelectedGenes] = useState<Gene[]>([]);
   const [selectedDrawerOpen, setSelectedDrawerOpen] = useState(false);
+  const [selectedChartsOpen, setSelectedChartsOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('selectedGenes');
@@ -198,32 +200,45 @@ const GeneTable: React.FC<Props> = ({
         title={
           <Group position="apart">
             <Title order={4}>Selected Genes ({selectedGenes.length})</Title>
-          <Group spacing="xs">
-            <Button
-              size="xs"
-              color="red"
-              onClick={() => {
-                setSelectedGenes([]);
-                setSelectedDrawerOpen(false);
-              }}
-            >
-              Clear All
-            </Button>
-            <Button
-              size="xs"
-              variant="light"
-              disabled={selectedGenes.length === 0}
-              onClick={() => exportGenesToCSV(selectedGenes, 'selected_genes')}
-            >
-              Export Selected
-            </Button>
-          </Group>
+            <Group spacing="xs">
+              <Button
+                size="xs"
+                color="red"
+                onClick={() => {
+                  setSelectedGenes([]);
+                  setSelectedDrawerOpen(false);
+                }}
+              >
+                Clear All
+              </Button>
+              <Button
+                size="xs"
+                variant="light"
+                disabled={selectedGenes.length === 0}
+                onClick={() => exportGenesToCSV(selectedGenes, 'selected_genes')}
+              >
+                Export Selected
+              </Button>
+              <Button
+                size="xs"
+                onClick={() => setSelectedChartsOpen((prev) => !prev)}
+                variant="outline"
+              >
+                {selectedChartsOpen ? 'Hide Charts' : 'Show Charts'}
+              </Button>
+            </Group>
           </Group>
         }
         padding="md"
         size="xl"
         position="right"
       >
+        {selectedChartsOpen && (
+          <div style={{ marginBottom: '1rem' }}>
+            <GeneCharts genes={selectedGenes} filters={{}} useFullDataForCharts={false} />
+          </div>
+        )}
+
         {selectedGenes.map((g) => (
           <div
             key={g.ensembl}
@@ -233,8 +248,9 @@ const GeneTable: React.FC<Props> = ({
           </div>
         ))}
       </Drawer>
+
       {selectedGenes.length > 0 && !selectedDrawerOpen && (
-          <div
+        <div
           style={{
             position: 'fixed',
             top: '50%',
@@ -274,7 +290,6 @@ const GeneTable: React.FC<Props> = ({
         </div>
       )}
     </>
-
   );
 };
 

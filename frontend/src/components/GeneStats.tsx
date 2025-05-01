@@ -28,18 +28,18 @@ type GeneStatsData = {
 };
 
 type Props = {
-    onBiotypeSelect?: (biotype: string) => void;
-  };
+  onBiotypeSelect?: (biotype: string) => void;
+  refreshKey?: number;
+};
 
-const GeneStats: React.FC<Props> = ({ onBiotypeSelect }) => {
-    const [stats, setStats] = useState<GeneStatsData | null>(null);
-    
-    useEffect(() => {
-        fetch('http://localhost:8000/genes/stats')
-        .then(res => res.json())
-        .then(data => setStats(data));
-    }, []);
-    
+const GeneStats: React.FC<Props> = ({ onBiotypeSelect, refreshKey }) => {
+  const [stats, setStats] = useState<GeneStatsData | null>(null);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/genes/stats')
+      .then(res => res.json())
+      .then(data => setStats(data));
+  }, [refreshKey]);
 
   if (!stats) return <Loader variant="dots" />;
 

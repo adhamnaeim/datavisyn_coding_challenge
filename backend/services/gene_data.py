@@ -11,6 +11,14 @@ for col in ['Biotype', 'Chromosome']:
 
 df['GeneLength'] = df['Seq region end'] - df['Seq region start']
 
+def load_csv() -> pd.DataFrame:
+    df = pd.read_csv("data/genes_human.csv", delimiter=';')
+    df = df.dropna(subset=['Ensembl', 'Chromosome', 'Seq region start', 'Seq region end'])
+    for col in ['Biotype', 'Chromosome']:
+        df[col] = df[col].astype(str).str.strip().str.replace(' ', '').str.title()
+    df['GeneLength'] = df['Seq region end'] - df['Seq region start']
+    return df
+
 def safe_str(val):
     return str(val) if pd.notna(val) else None
 
@@ -25,6 +33,7 @@ def get_filtered_genes(
     sort: Optional[str] = None,
     order: Optional[str] = "asc"
 ) -> Tuple[int, List[Gene]]:
+    df = load_csv()
     filtered_df = df.copy()
 
     if chromosome:
@@ -94,6 +103,7 @@ def get_gene_by_id(ensembl_id: str) -> Optional[Gene]:
     )
 
 def get_gene_stats() -> Dict[str, Any]:
+    df = load_csv()
     null_counts = {
         "gene_symbol": int(df['Gene symbol'].isna().sum()),
         "name": int(df['Name'].isna().sum()),
@@ -114,6 +124,7 @@ def get_gene_stats() -> Dict[str, Any]:
     }
 
 def get_filter_options() -> Dict[str, Any]:
+    df = load_csv()
     return {
         "chromosomes": sorted(df['Chromosome'].dropna().unique().tolist()),
         "biotypes": sorted(df['Biotype'].dropna().unique().tolist()),
@@ -122,3 +133,29 @@ def get_filter_options() -> Dict[str, Any]:
             "max": int(df['GeneLength'].max())
         }
     }
+    
+def append_genes_to_csv(new_genes: List[Gene], csv_path: str = "data/genes_human.csv") -> None:
+    df_existing = pd.read_csv(csv_path, delimiter=';')
+    existing_ids = set(df_existing["Ensembl"].astype(str))
+
+    new_rows = []
+    for gene in new_genes:
+        if gene.ensembl in existing_ids:
+            raise ValueError(f"Duplicate Ensembl ID: {gene.ensembl}")
+        if gene.start >= gene.end:
+            raise ValueError(f"Start must be less than End for {gene.ensembl}")
+
+        new_rows.append({
+            "Ensembl": gene.ensembl,
+            "Gene symbol": gene.gene_symbol or '',
+            "Name": gene.name or '',
+            "Biotype": gene.biotype or '',
+            "Chromosome": gene.chromosome,
+            "Seq region start": gene.start,
+            "Seq region end": gene.end,
+            "GeneLength": gene.gene_length,
+        })
+
+    df_new = pd.DataFrame(new_rows)
+    df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+    df_combined.to_csv(csv_path, sep=';', index=False)
