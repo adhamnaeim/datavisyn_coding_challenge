@@ -58,8 +58,8 @@ def get_filtered_genes(
         }
         filtered_df = filtered_df.sort_values(by=sort_map[sort], ascending=(order != "desc"))
 
-    if limit is not None and offset is not None:
-        filtered_df = filtered_df.iloc[offset:offset+limit]
+    if limit is not None:
+        filtered_df = filtered_df.iloc[offset or 0 : (offset or 0) + limit]
 
     genes = [
         Gene(
@@ -94,6 +94,12 @@ def get_gene_by_id(ensembl_id: str) -> Optional[Gene]:
     )
 
 def get_gene_stats() -> Dict[str, Any]:
+    null_counts = {
+        "gene_symbol": int(df['Gene symbol'].isna().sum()),
+        "name": int(df['Name'].isna().sum()),
+        "biotype": int(df['Biotype'].isna().sum()),
+        "chromosome": int(df['Chromosome'].isna().sum()),
+    }
     return {
         "total_genes": len(df),
         "unique_chromosomes": df['Chromosome'].nunique(),
@@ -102,7 +108,9 @@ def get_gene_stats() -> Dict[str, Any]:
             "min": int(df['GeneLength'].min()),
             "max": int(df['GeneLength'].max()),
             "mean": int(df['GeneLength'].mean())
-        }
+        },
+        "null_counts": null_counts,
+
     }
 
 def get_filter_options() -> Dict[str, Any]:

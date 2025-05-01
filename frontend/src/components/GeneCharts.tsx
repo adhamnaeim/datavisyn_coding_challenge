@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import Plot from 'react-plotly.js';
-import { Gene } from './GeneTable';
+import { Gene } from '../types/gene';
 import {
   Paper,
   Title,

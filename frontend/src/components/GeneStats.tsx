@@ -19,6 +19,12 @@ type GeneStatsData = {
     max: number;
     mean: number;
   };
+  null_counts: {
+    gene_symbol: number;
+    name: number;
+    biotype: number;
+    chromosome: number;
+  };
 };
 
 type Props = {
@@ -68,6 +74,16 @@ const GeneStats: React.FC<Props> = ({ onBiotypeSelect }) => {
                 </Badge>
               ))}
             </Group>
+
+            <div style={{ marginTop: '1rem' }}>
+              <Text fw={700}>Missing Values:</Text>
+              <Stack spacing={2}>
+                <Text size="sm">Gene Symbol: {stats.null_counts.gene_symbol.toLocaleString()}</Text>
+                <Text size="sm">Name: {stats.null_counts.name.toLocaleString()}</Text>
+                <Text size="sm">Biotype: {stats.null_counts.biotype.toLocaleString()}</Text>
+                <Text size="sm">Chromosome: {stats.null_counts.chromosome.toLocaleString()}</Text>
+              </Stack>
+            </div>
           </Stack>
         </Grid.Col>
       </Grid>
