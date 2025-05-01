@@ -1,35 +1,57 @@
 # Human Genes Viewer
 
-A simple fullstack web application to explore and visualize human gene data using:
+An interactive web application to explore human gene data, with support for sorting, filtering, search, statistics, and visual analysis. Data is loaded from a CSV file (`data/genes_human.csv`) and served using a FastAPI backend with a React frontend styled using Mantine.
 
 - **Backend**: FastAPI (Python), serving data from a CSV
 - **Frontend**: React + TypeScript + Mantine UI
 - **Deployment**: Local development using Uvicorn
 
----
+## Features
+
+- Searchable and sortable table of gene records
+- Filter by chromosome, biotype, and gene length
+- Highlight search matches with optional filtering
+- Per-record detail drawer
+- Persistent selection of records with summary drawer
+- Export filtered, selected, or full dataset as CSV
+- Add new gene records with form validation and CSV persistence
+- Live gene stats (total genes, unique chromosomes, length metrics, missing data)
+- GeneCharts showing biotype distributions and length histograms
+- Visualization of selected genes inside a nested drawer
+- Theme toggle (light/dark)
+- State persisted in local storage for selections
+
 
 ## Project Structure
 
 ```
-gene_app/
+.
 ├── backend/
 │   ├── main.py
-│   ├── models/
 │   ├── routes/
+│   │   └── genes.py
 │   ├── services/
-│   ├── tests/
+│   │   └── gene_data.py
+│   ├── models/
+│   │   └── gene.py
+│   ├── utils/
+│   │   └── import_csv.py
 │   ├── data/
 │   │   └── genes_human.csv
-│   └── requirements.txt
+│   └── tests/
+│       └── test_genes.py
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── GeneTable.tsx
 │   │   │   ├── GeneFilters.tsx
 │   │   │   ├── GeneStats.tsx
-│   │   │   └── GeneCharts.tsx
-│   │   ├── api/
-│   │   │   └── genes.ts
+│   │   │   ├── GeneCharts.tsx
+│   │   │   ├── AddGeneForm.tsx
+│   │   │   ├── detailRow.tsx
+│   │   │   └── ExportWarningPopover.tsx
+│   │   ├── types/
+│   │   │   └── gene.ts
 │   │   └── App.tsx
 └── README.md
 ```
@@ -72,7 +94,6 @@ gene_app/
 
 By default, the API runs at: `http://localhost:8000`
 
----
 
 ### Frontend (React + TypeScript)
 
@@ -93,8 +114,6 @@ By default, the API runs at: `http://localhost:8000`
 
 Frontend runs at: `http://localhost:3000`
 
----
-
 ## Features
 
 - Loads and displays human gene data from a CSV
@@ -109,14 +128,13 @@ Frontend runs at: `http://localhost:3000`
 - button toggle for dark mode
 - Smooth animations and visual transitions (table collapse, chart slides)
 
-
 ## API Highlights
 
-- `GET /genes`: Filter, paginate, and sort gene records
-- `GET /genes/{id}`: Retrieve individual gene by Ensembl ID
-- `GET /genes/stats`: Summary stats (total, lengths, biotype dist.)
-- `GET /genes/filters`: Fetch all valid filter options (UI-friendly)
-
+- `GET /genes`: Fetch gene records with support for limit, offset, search, filtering, and sorting
+- `GET /genes/{ensembl_id}`: Fetch a single gene by Ensembl ID
+- `GET /genes/filters`: Get available chromosome and biotype values
+- `GET /genes/stats`: Return dataset statistics including null counts
+- `POST /genes`: Add one or multiple new gene records (updates CSV in-place)
 
 ## Testing
 
@@ -124,3 +142,11 @@ Frontend runs at: `http://localhost:3000`
 cd backend
 PYTHONPATH=. pytest tests/
 ```
+Located in `backend/tests/test_genes.py` using FastAPI’s `TestClient`:
+
+- Basic fetching with limit (`test_get_genes_basic`)
+- Filtered fetching by chromosome and biotype
+- Fetching by valid and invalid Ensembl IDs
+- Validity of stats and filter endpoints
+- Edge cases (invalid filters, nonexistent IDs)
+- Adding gene rows (duplicate check, invalid length)
