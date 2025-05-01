@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Select, NumberInput, Stack } from '@mantine/core';
 
 type FilterOptions = {
@@ -18,17 +18,10 @@ type Props = {
     maxLength?: number;
   };
   onChange: (filters: Props['filters']) => void;
+  options?: FilterOptions | null;
 };
 
-const GeneFilters: React.FC<Props> = ({ filters, onChange }) => {
-  const [options, setOptions] = useState<FilterOptions | null>(null);
-
-  useEffect(() => {
-    fetch("http://localhost:8000/genes/filters")
-      .then(res => res.json())
-      .then(setOptions);
-  }, []);
-
+const GeneFilters: React.FC<Props> = ({ filters, onChange, options }) => {
   if (!options) return <p>Loading filters...</p>;
 
   return (
@@ -36,8 +29,8 @@ const GeneFilters: React.FC<Props> = ({ filters, onChange }) => {
       <Select
         label="Chromosome"
         placeholder="All"
-        size="xs"
-        data={options.chromosomes.map(ch => ({ value: ch, label: ch }))}
+        size="sm"
+        data={options.chromosomes.map((ch) => ({ value: ch, label: ch }))}
         value={filters.chromosome || null}
         onChange={(value) => onChange({ ...filters, chromosome: value || undefined })}
         clearable
@@ -47,12 +40,10 @@ const GeneFilters: React.FC<Props> = ({ filters, onChange }) => {
         label="Biotype"
         placeholder="All"
         size="sm"
-        clearable
+        data={options.biotypes.map((bt) => ({ value: bt, label: bt }))}
         value={filters.biotype || null}
-        data={options.biotypes.map(bt => ({ value: bt, label: bt }))}
         onChange={(value) => onChange({ ...filters, biotype: value || undefined })}
-        rightSectionWidth={24}
-      styles={{}}
+        clearable
       />
 
       <NumberInput
