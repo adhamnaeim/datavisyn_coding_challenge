@@ -179,7 +179,17 @@ const GeneTable: React.FC<Props> = ({
               {renderHeader('Gene Length', 'gene_length')}
             </tr>
           </thead>
-          <tbody>{rows}</tbody>
+          <tbody>
+            {genes.length > 0 ? (
+              rows
+            ) : (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '1rem', color: 'red' }}>
+                  No matching records found.
+                </td>
+              </tr>
+            )}
+          </tbody>
         </Table>
       </ScrollArea>
 
